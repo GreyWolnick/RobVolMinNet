@@ -17,7 +17,7 @@ parser.add_argument('--save_dir', type=str, help='dir to save model files', defa
 parser.add_argument('--dataset', type=str, help='mnist, cifar10, or cifar100', default='mnist')
 parser.add_argument('--n_epoch', type=int, default=200)
 parser.add_argument('--num_classes', type=int, default=10)
-parser.add_argument('--loss_func', type=str, default='ce')
+parser.add_argument('--loss_func', type=str, default='gce')
 parser.add_argument('--vol_min', type=bool, default=True)
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
