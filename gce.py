@@ -1,4 +1,3 @@
-import sys
 import tools
 import data_load
 import argparse
@@ -10,15 +9,16 @@ from transformer import transform_train, transform_test, transform_target
 from torch.optim.lr_scheduler import MultiStepLR
 from truncatedloss import TruncatedLoss
 
-# Given groups=1, weight of size [64, 3, 3, 3], expected input[128, 1, 28, 28] to have 3 channels, but got 1 channels instead
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, help='initial learning rate', default=0.01)
+parser.add_argument('--q', type=float, help='q parameter in gce', default=0.7)
+parser.add_argument('--k', type=float, help='k parameter in gce', default=0.5)
 parser.add_argument('--save_dir', type=str, help='dir to save model files', default='saves')
-parser.add_argument('--exp_type', type=str, help='type of experiment', default='default')
 parser.add_argument('--dataset', type=str, help='mnist, cifar10, or cifar100', default='mnist')
 parser.add_argument('--n_epoch', type=int, default=200)
 parser.add_argument('--num_classes', type=int, default=10)
+parser.add_argument('--loss_func', type=str, default='ce')
+parser.add_argument('--vol_min', type=bool, default=True)
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--seed', type=int, default=1)
@@ -29,10 +29,7 @@ parser.add_argument('--lam', type=float, default=0.0001)
 parser.add_argument('--anchor', action='store_false')
 
 parser.add_argument('--sess', default='default', type=str, help='session id')
-parser.add_argument('--start_prune', default=40, type=int,
-                    help='number of total epochs to run')
-parser.add_argument('--gamma', type=float, default=0.1)
-parser.add_argument('--schedule', nargs='+', type=int)
+parser.add_argument('--start_prune', default=40, type=int, help='number of total epochs to run')
 
 args = parser.parse_args()
 np.set_printoptions(precision=2, suppress=True)
@@ -127,15 +124,10 @@ test_loader = DataLoader(dataset=test_data,
                          num_workers=4,
                          drop_last=False)
 
-# DATA LOADER TRUNCATED
-# test_loader = torch.utils.data.DataLoader(
-#     test_data, batch_size=100, shuffle=False, num_workers=2)
-#
-# train_loader = torch.utils.data.DataLoader(
-#     train_data, batch_size=args.batch_size, shuffle=True, num_workers=2)
-
-criterion = TruncatedLoss(trainset_size=len(train_data)).cuda()  # Truncated Loss
-# criterion = F.nll_loss  # Negative Log Likelihood Loss
+if args.loss_func == "gce":
+    criterion = TruncatedLoss(trainset_size=len(train_data)).cuda()  # Truncated Loss
+else:
+    criterion = F.nll_loss  # Negative Log Likelihood Loss
 
 # cuda
 if torch.cuda.is_available:
@@ -151,12 +143,8 @@ val_acc_list = []
 test_acc_list = []
 test_loss_list = []
 
-t_est_list = []
+t_est_error_list = []
 t_vol_list = []
-
-q_list = []
-k_list = []
-
 
 best_acc = 0
 
@@ -213,9 +201,12 @@ for epoch in range(args.n_epoch):
 
         vol_loss = t.slogdet().logabsdet
 
-        # ce_loss = criterion(out.log(), targets.long())
-        gce_loss = criterion(out.log(), targets, indexes)
-        loss = gce_loss + args.lam * vol_loss
+        if args.loss_func == "gce":
+            ce_loss = criterion(out.log(), targets, indexes)
+        else:
+            ce_loss = criterion(out.log(), targets.long())
+
+        loss = ce_loss + args.lam * vol_loss
 
         train_loss += loss.item()
         train_vol_loss += vol_loss.item()
@@ -250,9 +241,12 @@ for epoch in range(args.n_epoch):
             t = trans()
 
             out = torch.mm(clean, t)
-            # loss = criterion(out.log(), targets.long())
 
-            loss = criterion(clean, targets, indexes)
+            if args.loss_func == "gce":
+                loss = criterion(clean, targets, indexes)
+            else:
+                loss = criterion(out.log(), targets.long())
+
             val_loss += loss.item()
             pred = torch.max(out, 1)[1]
             val_correct = (pred == targets).sum()
@@ -271,8 +265,10 @@ for epoch in range(args.n_epoch):
 
             clean = model(inputs)
 
-            # loss = criterion(clean.log(), targets.long())
-            loss = criterion(clean, targets, indexes)
+            if args.loss_func == "gce":
+                loss = criterion(clean, targets, indexes)
+            else:
+                loss = criterion(clean.log(), targets.long())
 
             test_loss += loss.item()
             pred = torch.max(clean, 1)[1]
@@ -282,9 +278,6 @@ for epoch in range(args.n_epoch):
         print('Test Loss: {:.6f}, Acc: {:.6f}'.format(test_loss / (len(test_data)) * args.batch_size,
                                                       test_acc / (len(test_data))), file=logs, flush=True)
 
-        # q_list.append(criterion.q)
-        # k_list.append(criterion.k)
-
         est_T = t.detach().cpu().numpy()
         estimate_error = tools.error(est_T, train_data.t)
 
@@ -293,16 +286,17 @@ for epoch in range(args.n_epoch):
 
         print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
         print(est_T, file=logs, flush=True)
-        t_est_list.append(estimate_error)  # Add T Estimation Error to list
+        t_est_error_list.append(estimate_error)
+        t_vol_list.append(train_vol_loss / (len(train_data)) * args.batch_size)
 
-    train_loss_list.append(train_loss / (len(train_data)))
+    train_loss_list.append(train_loss / (len(train_data)) * args.batch_size)
     train_acc_list.append(train_acc / (len(train_data)))
-    val_loss_list.append(val_loss / (len(val_data)))
+    val_loss_list.append(val_loss / (len(val_data)) * args.batch_size)
     val_acc_list.append(val_acc / (len(val_data)))
-    test_loss_list.append(test_loss / (len(test_data)) * args.batch_size)  # Add test loss to list
+    test_loss_list.append(test_loss / (len(test_data)) * args.batch_size)
     test_acc_list.append(test_acc / (len(test_data)))
 
-val_loss_array = np.array(val_loss_list)  # WHat is this doing?!?!
+val_loss_array = np.array(val_loss_list)
 val_acc_array = np.array(val_acc_list)
 model_index = np.argmin(val_loss_array)
 model_index_acc = np.argmax(val_acc_array)
@@ -323,16 +317,12 @@ print("Best epoch: %d" % model_index, file=logs, flush=True)
 print(final_est_T, file=logs, flush=True)
 
 print("Summary Metrics:", file=logs, flush=True)
-print("Number of Epochs:", args.n_epoch, file=logs, flush=True)
-print("Lambda:", args.lam, file=logs, flush=True)
-print("T Accuracy:", t_est_list, file=logs, flush=True)
+print("T Accuracy:", t_est_error_list, file=logs, flush=True)
 print("T Loss:", t_vol_list, file=logs, flush=True)
 print("Training Loss:", train_loss_list, file=logs, flush=True)
 print("Training Accuracy:", train_acc_list, file=logs, flush=True)
 print("Testing Loss:", test_loss_list, file=logs, flush=True)
 print("Testing Accuracy:", test_acc_list, file=logs, flush=True)
-print("Q List:", q_list, file=logs, flush=True)
-print("K List:", k_list, file=logs, flush=True)
 logs.close()
 
 
