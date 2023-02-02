@@ -7,7 +7,7 @@ import numpy as np
 
 class TruncatedLoss(nn.Module):
 
-    def __init__(self, q=0.2, k=0.5, trainset_size=50000):
+    def __init__(self, q, k, trainset_size=50000):
         super(TruncatedLoss, self).__init__()
         self.q = q
         self.k = k
