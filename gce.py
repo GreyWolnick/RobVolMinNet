@@ -159,6 +159,21 @@ estimate_error = tools.error(est_T, train_data.t)
 print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
 
 
+def checkpoint(acc, epoch, net):
+    # Save checkpoint.
+    print('Saving..')
+    state = {
+        'net': net,
+        'acc': acc,
+        'epoch': epoch,
+        'rng_state': torch.get_rng_state()
+    }
+    if not os.path.isdir('checkpoint'):
+        os.mkdir('checkpoint')
+    torch.save(state, './checkpoint/ckpt.t7.' +
+               args.sess)
+
+
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
@@ -278,6 +293,19 @@ for epoch in range(args.n_epoch):
         print('Test Loss: {:.6f}, Acc: {:.6f}'.format(test_loss / (len(test_data)) * args.batch_size,
                                                       test_acc / (len(test_data))), file=logs, flush=True)
 
+        # Save checkpoint.
+        acc = test_acc / (len(test_data))
+        if acc > best_acc:
+            best_acc = acc
+            checkpoint(acc, epoch, model)
+        if not os.path.isdir('checkpoint'):
+            os.mkdir('checkpoint')
+
+        state = {
+            'current_net': model,
+        }
+        torch.save(state, './checkpoint/current_net')
+
         est_T = t.detach().cpu().numpy()
         estimate_error = tools.error(est_T, train_data.t)
 
@@ -324,22 +352,3 @@ print("Training Accuracy:", train_acc_list, file=logs, flush=True)
 print("Testing Loss:", test_loss_list, file=logs, flush=True)
 print("Testing Accuracy:", test_acc_list, file=logs, flush=True)
 logs.close()
-
-
-def checkpoint(acc, epoch, net):
-    # Save checkpoint.
-    print('Saving..')
-    state = {
-        'net': net,
-        'acc': acc,
-        'epoch': epoch,
-        'rng_state': torch.get_rng_state()
-    }
-    if not os.path.isdir('checkpoint'):
-        os.mkdir('checkpoint')
-    torch.save(state, './checkpoint/ckpt.t7.' +
-               args.sess)
-
-
-# if __name__ == '__main__':
-#     main()
