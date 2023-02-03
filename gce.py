@@ -57,6 +57,22 @@ if args.dataset == 'mnist':
     trans = sig_t(device, args.num_classes)
     optimizer_trans = optim.Adam(trans.parameters(), lr=args.lr, weight_decay=0)
 
+if args.dataset == 'fashionmnist':
+    args.n_epoch = 60
+    num_classes = 10
+    milestones = None
+
+    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
+                                         target_transform=transform_target,
+                                         noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type,
+                                         anchor=args.anchor)
+    val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
+                                       noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
+    test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
+    model = Lenet()
+    trans = sig_t(device, args.num_classes)
+    optimizer_trans = optim.Adam(trans.parameters(), lr=args.lr, weight_decay=0)
+
 if args.dataset == 'cifar10':
     args.n_epoch = 80
 
