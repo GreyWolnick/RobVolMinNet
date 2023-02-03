@@ -189,8 +189,8 @@ for epoch in range(args.n_epoch):
     test_acc = 0.
 
     if (epoch + 1) >= args.start_prune and (epoch + 1) % 10 == 0:
-        checkpoint = torch.load('./checkpoint/ckpt.t7.' + args.sess)
-        model = checkpoint['net']
+        checkpoint_dict = torch.load('./checkpoint/ckpt.t7.' + args.sess)
+        model = checkpoint_dict['net']
         model.eval()
         for batch_idx, (inputs, targets) in enumerate(train_loader):
             indexes = [i for i in range(0, len(inputs))]
