@@ -188,7 +188,7 @@ for epoch in range(args.n_epoch):
     test_loss = 0.
     test_acc = 0.
 
-    if (epoch + 1) >= args.start_prune and (epoch + 1) % 10 == 0:
+    if args.loss_func == "gce" and (epoch + 1) >= args.start_prune and (epoch + 1) % 10 == 0:
         checkpoint_dict = torch.load('./checkpoint/ckpt.t7.' + args.sess)
         model = checkpoint_dict['net']
         model.eval()
