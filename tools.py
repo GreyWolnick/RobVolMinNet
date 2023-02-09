@@ -57,8 +57,7 @@ def dataset_split(train_images, train_labels, noise_rate=0.5, split_per=0.9, ran
     print("Image:", train_images[1])
     print("Label:", train_labels[1])
     print("True Label:", train_labels[1])
-    # torch.from_numpy(train_images[1])
-    print("Output from Outlier:", outlier(torch.flatten(train_images[1])))
+    print("Output from Outlier:", outlier(torch.flatten(torch.from_numpy(train_images[1]))))
 
     exit()
 
