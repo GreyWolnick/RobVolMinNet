@@ -11,7 +11,7 @@ def inverse_normalize(tensor, mean, std):
 
 def transform_train(dataset_name):
 
-    if dataset_name == 'mnist':
+    if dataset_name == 'mnist' or dataset_name == "fashionmnist":
         transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307, ),(0.3081, )),
