@@ -27,10 +27,10 @@ class mnist_dataset(Data.Dataset):
 
         outlier = Outlier(784, 200, 10)
 
-        print("Original Image:", self.transform(original_images[1]))
+        print("Original Image:", self.transform(Image.fromarray(original_images[1])))
         print("True Label:", original_labels[1])
         # torch.flatten()
-        print("Output from Outlier:", outlier(self.transform(original_images[1])))
+        print("Output from Outlier:", outlier(self.transform(Image.fromarray(original_images[1]))))
 
         exit()
 
