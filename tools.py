@@ -1,6 +1,8 @@
 import numpy as np
 import utils
+
 from models import Outlier
+import torch
 
 
 def norm(T):
@@ -51,11 +53,11 @@ def fit(X, num_classes, filter_outlier=False):
 def dataset_split(train_images, train_labels, noise_rate=0.5, split_per=0.9, random_seed=1, num_classes=10, noise_type='symmetric'):
     clean_train_labels = train_labels[:, np.newaxis]
     outlier = Outlier(784, 200, 10)
-    
+
     print("Image:", train_images[1])
     print("Label:", train_labels[1])
-    print("True Label:", outlier(train_labels[1]))
-    print("Output from Outlier:", outlier(train_images[1]))
+    print("True Label:", train_labels[1])
+    print("Output from Outlier:", outlier(torch.from_numpy(train_images[1])))
 
     exit()
 
