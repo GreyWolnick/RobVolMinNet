@@ -25,7 +25,7 @@ class mnist_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        outlier = Outlier(784, 200, 10)
+        outlier = Outlier(784, 200, num_class)  # Just testing stuff
 
         print("Original Image:", self.transform(original_images[1]))
         print("True Label:", original_labels[1])
@@ -35,8 +35,6 @@ class mnist_dataset(Data.Dataset):
 
         unflatten = torch.nn.Unflatten(0, (10, 10))
         print("Unflattened:", unflatten(outlier))
-
-        exit()
 
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
             original_images,
