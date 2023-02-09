@@ -4,6 +4,9 @@ from PIL import Image
 from transformer import *
 import tools, pdb
 
+from models import Outlier
+import torch
+
 
 class mnist_dataset(Data.Dataset):
     def __init__(self, train=True, transform=None, target_transform=None, noise_rate=0.5, split_per=0.9, random_seed=1,
@@ -21,6 +24,15 @@ class mnist_dataset(Data.Dataset):
             original_labels = np.load('data/mnist/mnist_labels.npy')
 
         print(original_images.shape)
+
+        outlier = Outlier(784, 200, 10)
+
+        print("Original Image:", self.transform(original_images[1]))
+        print("True Label:", original_labels[1])
+        # torch.flatten()
+        print("Output from Outlier:", outlier(self.transform(original_images[1])))
+
+        exit()
 
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
             original_images,
