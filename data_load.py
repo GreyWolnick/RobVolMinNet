@@ -29,7 +29,8 @@ class mnist_dataset(Data.Dataset):
 
         print("Original Image:", self.transform(original_images[1]))
         print("True Label:", original_labels[1])
-        print("Output from Outlier:", outlier(torch.flatten(torch.from_numpy(self.transform(original_images[1])))))
+        # torch.from_numpy()
+        print("Output from Outlier:", outlier(torch.flatten(self.transform(original_images[1]))))
 
         exit()
 
