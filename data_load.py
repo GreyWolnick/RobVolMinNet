@@ -30,7 +30,11 @@ class mnist_dataset(Data.Dataset):
         print("Original Image:", self.transform(original_images[1]))
         print("True Label:", original_labels[1])
         # torch.from_numpy()
-        print("Output from Outlier:", outlier(torch.flatten(self.transform(original_images[1]))))
+        outlier = outlier(torch.flatten(self.transform(original_images[1])))
+        print("Output from Outlier:", outlier)
+
+        unflatten = torch.nn.Unflatten(10, (10, 10))
+        print("Unflattened:", unflatten(outlier))
 
         exit()
 
