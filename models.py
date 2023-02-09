@@ -5,6 +5,22 @@ import numpy as np
 from utils import *
 
 
+class Outlier(nn.Module):
+
+    def __init__(self, input_size, hidden_size, num_classes):
+        super(Outlier, self).__init__()
+        self.l1 = nn.Linear(input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.l3 = nn.Linear(hidden_size, num_classes**2)
+
+    def forward(self, x):
+        out = self.l1(x)
+        out = self.relu(out)
+        out = self.l3(out)
+
+        return F.softmax(out)
+
+
 class Lenet(nn.Module):
 
     def __init__(self):

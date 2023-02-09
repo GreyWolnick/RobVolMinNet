@@ -5,6 +5,7 @@ import hashlib
 import errno
 import numpy as np
 from numpy.testing import assert_array_almost_equal
+from models import Outlier
 
 
 def check_integrity(fpath, md5):
@@ -106,12 +107,18 @@ def multiclass_noisify(y, P, random_state=1):
     assert_array_almost_equal(P.sum(axis=1), np.ones(P.shape[1]))
     assert (P >= 0.0).all()
 
+    print("Y: ", y)
+    outlier = Outlier(784, 200, 10)
+
     m = y.shape[0]
     new_y = y.copy()
     flipper = np.random.RandomState(random_state)
 
     for idx in np.arange(m):
         i = y[idx]
+        print("Label from Y: ", i)
+        print("Noisy Label from Outlier: ", outlier(i))
+        exit()
         # draw a vector with only an 1
         flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
@@ -139,6 +146,10 @@ def noisify_multiclass_symmetric(y_train, noise, random_state=None, nb_classes=1
         y_train = y_train_noisy
 
     return y_train, actual_noise, P
+
+
+def generate_instance_dependent_T():
+    return
 
 
 def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, random_state=1):
