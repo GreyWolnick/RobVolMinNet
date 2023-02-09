@@ -117,7 +117,7 @@ def multiclass_noisify(y, P, random_state=1):
     for idx in np.arange(m):
         i = y[idx]
         print("Label from Y: ", i)
-        print("Noisy Label from Outlier: ", outlier(i))
+        print("Noisy Label from Outlier: ", outlier(torch.from_numpy(i)))
         exit()
         # draw a vector with only an 1
         flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
