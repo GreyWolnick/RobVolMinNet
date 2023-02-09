@@ -1,5 +1,6 @@
 import numpy as np
 import utils
+from models import Outlier
 
 
 def norm(T):
@@ -49,6 +50,11 @@ def fit(X, num_classes, filter_outlier=False):
 # train set and val set split
 def dataset_split(train_images, train_labels, noise_rate=0.5, split_per=0.9, random_seed=1, num_classes=10, noise_type='symmetric'):
     clean_train_labels = train_labels[:, np.newaxis]
+    outlier = Outlier(784, 200, 10)
+    print("True Label:", outlier(train_labels[1]))
+    print("Output from Outlier:", outlier(train_images[1]))
+
+    exit()
 
     if noise_type == 'symmetric':
         noisy_labels, real_noise_rate, transition_matrix = utils.noisify_multiclass_symmetric(clean_train_labels,
