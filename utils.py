@@ -7,6 +7,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 from models import Outlier
+import torch.nn.functional as F
 
 
 def check_integrity(fpath, md5):
@@ -146,10 +147,12 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         sample_T = outlier(torch.flatten(transform(x[idx])))
         # draw a vector with only an 1
         print(sample_T)
+
+        sample_T = F.normalize(sample_T, p=1, dim=1)
+
+        print(sample_T)
         # flipped = flipper.multinomial(1, unflatten(outlier)[i, :][0], 1)[0]
         # new_y[idx] = np.where(flipped == 1)[0]
-
-    print(new_y)
 
     exit()
 
@@ -185,10 +188,6 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
         y_train = y_train_noisy
 
     return y_train, actual_noise, P
-
-
-def generate_instance_dependent_T():
-    return
 
 
 def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, random_state=1):
