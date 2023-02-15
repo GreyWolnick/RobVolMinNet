@@ -180,7 +180,8 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
 
         # change the 2 below this round(x_train.shape[0]*outlier_noise) this causes errors???
 
-        sample_idx = np.random.choice(x_train.shape[0], 2, replace=False)
+        sample_idx = np.random.choice(x_train.shape[0], round(x_train.shape[0]*outlier_noise), replace=False)
+        print(sample_idx[:10])
         # how do I want to split these labels so outliers are not used in multiclass_noisify
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], transform=transform,
                                                      nb_classes=nb_classes, random_state=random_state)
@@ -189,14 +190,14 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
         for idx, outlier_idx in enumerate(sample_idx):
             y_train_noisy[outlier_idx] = y_train_outlier[idx]
 
-        print("OUTLIER INDEXES:", sample_idx)
-        print("ORIGINALS")
-        for i in range(2):
-            print(y_train[sample_idx[i]])
-
-        print("New")
-        for i in range(2):
-            print(y_train_noisy[sample_idx[i]])
+        # print("OUTLIER INDEXES:", sample_idx[:10])
+        # print("ORIGINALS")
+        # for i in range(10):
+        #     print(y_train[sample_idx[i]])
+        #
+        # print("New")
+        # for i in range(10):
+        #     print(y_train_noisy[sample_idx[i]])
 
 
         actual_noise = (y_train_noisy != y_train).mean()
