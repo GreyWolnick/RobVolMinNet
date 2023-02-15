@@ -130,7 +130,7 @@ def col_norm(T):
 
 def row_norm(T):
     row_sums = np.sum(T, axis=1)
-    T_norm = T / row_sums
+    T_norm = T / row_sums.reshape((-1, 1))
     return T_norm
 
 def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
@@ -152,9 +152,9 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
 
         print("I:", i)
 
-        sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy()
+        sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
         print("BEFORE NORM:", sample_T)
-        sample_T = row_norm(sample_T)  # Issue: only produces really low values
+        sample_T = row_norm(sample_T)  # This sometimes produces rows that sum > 1
 
         # if idx % 1000 == 0:
         print("Outlier T:", sample_T)
