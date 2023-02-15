@@ -4,13 +4,10 @@ from PIL import Image
 from transformer import *
 import tools, pdb
 
-from models import Outlier
-import torch
-
 
 class mnist_dataset(Data.Dataset):
     def __init__(self, train=True, transform=None, target_transform=None, noise_rate=0.5, split_per=0.9, random_seed=1,
-                 num_class=10, noise_type='symmetric', anchor=True):
+                 num_class=10, noise_type='symmetric', anchor=True, outlier_noise_rate=0.05):
 
         self.transform = transform
         self.target_transform = target_transform
@@ -25,20 +22,9 @@ class mnist_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        outlier = Outlier(784, 200, num_class)  # Just testing stuff
-
-        print("Original Image:", self.transform(original_images[1]))
-        print("True Label:", original_labels[1])
-        # torch.from_numpy()
-        outlier = outlier(torch.flatten(self.transform(original_images[1])))
-        print("Output from Outlier:", outlier)
-
-        unflatten = torch.nn.Unflatten(0, (10, 10))
-        print("Unflattened:", unflatten(outlier))
-
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images,
-            original_labels, noise_rate, split_per, random_seed, num_class, noise_type)
+            original_images, original_labels, self.transform, noise_rate, split_per,
+            random_seed, num_class, noise_type, outlier_noise_rate)
         pass
 
     def __getitem__(self, index):

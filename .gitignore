@@ -1,0 +1,9 @@
+# .gitignore
+venv
+__pycache__
+coteach.py
+data
+main.py
+main2.py
+scratch.py
+store.txt

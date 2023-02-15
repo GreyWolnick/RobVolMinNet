@@ -121,7 +121,7 @@ print(args, file=logs, flush=True)
 
 # optimizer and StepLR
 optimizer_es = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, momentum=0.9)
-# optimizer_es = optim.Adam(model.parameters(), lr=args.lr)
+# optimizer_es = optim.Adam(model.parameters(), lr=args.lr) # Learning rate probably too high for MNIST and FASHION
 scheduler1 = MultiStepLR(optimizer_es, milestones=milestones, gamma=0.1)
 scheduler2 = MultiStepLR(optimizer_trans, milestones=milestones, gamma=0.1)
 

@@ -6,6 +6,8 @@ import errno
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 
+from models import Outlier
+
 
 def check_integrity(fpath, md5):
     if not os.path.isfile(fpath):
@@ -110,15 +112,40 @@ def multiclass_noisify(y, P, random_state=1):
     new_y = y.copy()
     flipper = np.random.RandomState(random_state)
 
+    print("MULTICLASS NOISIFY")
+    print("M:", m)
+    print("flipper:", flipper)
+
     for idx in np.arange(m):
         i = y[idx]
         # draw a vector with only an 1
         flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
 
+    print("new y:", new_y)
+
+    exit()
+
     return new_y
 
-def noisify_multiclass_symmetric(y_train, noise, random_state=None, nb_classes=10):
+
+def multiclass_outlier_noisify(y, transform, nb_classes=10):
+    """
+        adds gross outliers to training labels y
+    """
+    outlier = Outlier(784, 200, nb_classes)  # make these non-static
+
+    # print("Original Image:", self.transform(original_images[1]))
+    # print("True Label:", original_labels[1])
+    # # torch.from_numpy()
+    # outlier = outlier(torch.flatten(self.transform(original_images[1])))
+    # print("Output from Outlier:", outlier)
+    #
+    # unflatten = torch.nn.Unflatten(0, (10, 10))
+    # print("Unflattened:", unflatten(outlier))
+
+
+def noisify_multiclass_symmetric(y_train, noise, outlier_noise, transform, random_state=None, nb_classes=10):
     """mistakes:
         flip in the symmetric way
     """
@@ -133,6 +160,8 @@ def noisify_multiclass_symmetric(y_train, noise, random_state=None, nb_classes=1
             P[i, i] = 1. - n
         P[nb_classes-1, nb_classes-1] = 1. - n
 
+        print(y_train)
+        # y_train_outlier =
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
