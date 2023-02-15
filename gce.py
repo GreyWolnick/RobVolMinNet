@@ -192,6 +192,7 @@ def checkpoint(acc, epoch, net):
     torch.save(state, './checkpoint/ckpt.t7.' +
                args.sess)
 
+exit()
 
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)

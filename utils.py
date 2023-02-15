@@ -175,8 +175,10 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], transform=transform,
                                                      nb_classes=nb_classes, random_state=random_state)
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
-        print(sample_idx)
-        exit()
+
+        for idx, outlier_idx in enumerate(sample_idx):
+            y_train_noisy[outlier_idx] = y_train_outlier[idx]
+
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
         y_train = y_train_noisy

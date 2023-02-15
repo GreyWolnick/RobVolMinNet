@@ -25,25 +25,6 @@ class mnist_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        # outlier = Outlier(784, 200, num_class)  # Just testing stuff
-        #
-        # print(original_images.shape)
-        # print(original_images[1].shape)
-        #
-        # print("Original Image:", transform(original_images[1]), "\n")
-        # print("Flattened Image:", torch.flatten(transform(original_images[1])), "\n")
-        # outlier = outlier(torch.flatten(transform(original_images)))
-        # print(outlier)
-
-        # print("Original Image:", self.transform(original_images[1]))
-        # print("True Label:", original_labels[1])
-        # # torch.from_numpy()
-        # outlier = outlier(torch.flatten(self.transform(original_images[1])))
-        # print("Output from Outlier:", outlier)
-        #
-        # unflatten = torch.nn.Unflatten(0, (10, 10))
-        # print("Unflattened:", unflatten(outlier))
-
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
             original_images, original_labels, self.transform, noise_rate, split_per,
             random_seed, num_class, noise_type, outlier_noise_rate)
