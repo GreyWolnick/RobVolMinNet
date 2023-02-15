@@ -7,7 +7,6 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 from models import Outlier
-from tools import norm
 
 
 def check_integrity(fpath, md5):
@@ -122,6 +121,11 @@ def multiclass_noisify(y, P, random_state=1):
 
     return new_y
 
+
+def norm(T):
+    row_sum = np.sum(T, 1)
+    T_norm = T / row_sum
+    return T_norm
 
 def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
     """
