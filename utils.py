@@ -7,7 +7,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 from models import Outlier
-import torch.nn.functional as F
+from tools import norm
 
 
 def check_integrity(fpath, md5):
@@ -148,7 +148,7 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         # draw a vector with only an 1
         print(sample_T)
 
-        sample_T = F.normalize(sample_T, p=1, dim=1)
+        sample_T = norm(sample_T)
 
         print(sample_T)
         # flipped = flipper.multinomial(1, unflatten(outlier)[i, :][0], 1)[0]
