@@ -178,8 +178,9 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
             P[i, i] = 1. - n
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
-        # change the 2 below this
-        sample_idx = np.random.choice(x_train.shape[0], round(x_train.shape[0]*outlier_noise), replace=False)
+        # change the 2 below this round(x_train.shape[0]*outlier_noise)
+
+        sample_idx = np.random.choice(x_train.shape[0], 2, replace=False)
         # how do I want to split these labels so outliers are not used in multiclass_noisify
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], transform=transform,
                                                      nb_classes=nb_classes, random_state=random_state)
