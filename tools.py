@@ -54,7 +54,7 @@ def dataset_split(train_images, train_labels, transform, noise_rate=0.5, split_p
     print("NEW:", clean_train_labels[:10])
 
     if noise_type == 'symmetric':
-        noisy_labels, real_noise_rate, transition_matrix = utils.noisify_multiclass_symmetric(clean_train_labels,
+        noisy_labels, real_noise_rate, transition_matrix = utils.noisify_multiclass_symmetric(clean_train_labels, train_images,
                                                 noise=noise_rate, outlier_noise=outlier_noise_rate, transform=transform,
                                                 random_state=random_seed, nb_classes=num_classes)
     elif noise_type == 'flip':
