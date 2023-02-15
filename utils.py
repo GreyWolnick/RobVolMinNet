@@ -151,12 +151,10 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         i = y[idx]
 
         sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy()
-        print("BEFORE:", sample_T)
         sample_T = row_norm(sample_T)  # Issue: only produces really low values
 
-        # if idx % 1000 == 0:
-        print("SAMPLE:", sample_T)
-        print(sum(sample_T[i]))
+        if idx % 1000 == 0:
+            print("Outlier T:", sample_T)
 
         flipped = flipper.multinomial(1, sample_T[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
@@ -182,6 +180,7 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
         # change the 2 below this
+        print(x_train.shape[0]*outlier_noise)
         sample_idx = np.random.choice(x_train.shape[0], 2, replace=False)
         # how do I want to split these labels so outliers are not used in multiclass_noisify
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], transform=transform,
