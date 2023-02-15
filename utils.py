@@ -123,8 +123,8 @@ def multiclass_noisify(y, P, random_state=1):
 
 
 def norm(T):
-    row_sum = np.sum(T, 1)
-    T_norm = T / row_sum
+    column_sums = np.sum(T, axis=0)
+    T_norm = T / column_sums
     return T_norm
 
 def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
@@ -151,6 +151,8 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         sample_T = outlier(torch.flatten(transform(x[idx])))
         # draw a vector with only an 1
         print(sample_T)
+
+        print("RADNOM:", np.random.rand(10, 10))
 
         sample_T = norm(sample_T)
 
