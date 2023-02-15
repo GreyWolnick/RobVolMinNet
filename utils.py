@@ -161,7 +161,8 @@ def noisify_multiclass_symmetric(y_train, noise, outlier_noise, transform, rando
         P[nb_classes-1, nb_classes-1] = 1. - n
 
         print(y_train)
-        # y_train_outlier =
+        y_train_outlier = np.random.choice(y_train, int(y_train.len()*outlier_noise))
+        print(y_train_outlier)
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
