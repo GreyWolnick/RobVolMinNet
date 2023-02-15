@@ -95,12 +95,13 @@ def list_files(root, suffix, prefix=False):
 
     return files
 
+
 # basic function
 def multiclass_noisify(y, P, random_state=1):
     """ Flip classes according to transition probability matrix T.
     It expects a number between 0 and the number of classes - 1.
     """
-#    print (np.max(y), P.shape[0])
+    #    print (np.max(y), P.shape[0])
     assert P.shape[0] == P.shape[1]
     assert np.max(y) < P.shape[0]
 
@@ -156,13 +157,15 @@ def noisify_multiclass_symmetric(y_train, noise, outlier_noise, transform, rando
     if n > 0.0:
         # 0 -> 1
         P[0, 0] = 1. - n
-        for i in range(1, nb_classes-1):
+        for i in range(1, nb_classes - 1):
             P[i, i] = 1. - n
-        P[nb_classes-1, nb_classes-1] = 1. - n
+        P[nb_classes - 1, nb_classes - 1] = 1. - n
 
         print(y_train)
-        y_train_outlier = np.random.choice(y_train, int(y_train.size * outlier_noise))
+        copy = y_train.copy()
+        y_train_outlier = y_train[np.random.choice(y_train.shape[0], 2, replace=False), :]
         print(y_train_outlier)
+        print(y_train == copy)
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
@@ -177,7 +180,9 @@ def generate_instance_dependent_T():
 
 def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, random_state=1):
     if noise_type == 'symmetric':
-        train_noisy_labels, actual_noise_rate, t = noisify_multiclass_symmetric(train_labels, noise_rate, random_state=random_state, nb_classes=nb_classes)
+        train_noisy_labels, actual_noise_rate, t = noisify_multiclass_symmetric(train_labels, noise_rate,
+                                                                                random_state=random_state,
+                                                                                nb_classes=nb_classes)
 
     return train_noisy_labels, actual_noise_rate
 
