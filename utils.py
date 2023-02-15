@@ -130,6 +130,7 @@ def multiclass_outlier_noisify(x, transform, nb_classes=10):
     """
 
     print(x.shape)
+    print(x)
     outlier = Outlier(784, 200, nb_classes)  # make these non-static
 
     # print("Original Image:", self.transform(original_images[1]))
@@ -156,6 +157,9 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
             P[i, i] = 1. - n
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
+        print(x_train.shape)
+
+        # change the 2 below this
         y_train_outlier = multiclass_outlier_noisify(x_train[np.random.choice(x_train.shape[0], 2, replace=False), :],
                                                      transform=transform, nb_classes=nb_classes)
         print(y_train_outlier)
