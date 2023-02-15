@@ -165,6 +165,8 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
     """mistakes:
         flip in the symmetric way
     """
+    print("Just got called")
+
     P = np.ones((nb_classes, nb_classes))
     n = noise
     P = (n / (nb_classes - 1)) * P
