@@ -123,9 +123,14 @@ def multiclass_noisify(y, P, random_state=1):
     return new_y
 
 
-def norm(T):
+def col_norm(T):
     column_sums = np.sum(T, axis=0)
     T_norm = T / column_sums
+    return T_norm
+
+def row_norm(T):
+    row_sums = np.sum(T, axis=1)
+    T_norm = T / row_sums
     return T_norm
 
 def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
@@ -143,7 +148,7 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         i = y[idx]
 
         sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy()
-        sample_T = norm(sample_T)  # Issue: only produces really low values
+        sample_T = row_norm(sample_T)  # Issue: only produces really low values
 
         if idx % 1000 == 0:
             print(sample_T)
