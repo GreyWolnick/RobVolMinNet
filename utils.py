@@ -133,15 +133,18 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
 
     new_y = y.copy()
 
-    for idx in np.arange(x.shape[0]):
-        # print("Original Image:", self.transform(original_images[1]))
-        # print("True Label:", original_labels[1])
-        # torch.from_numpy()
-        outlier = outlier(torch.flatten(transform(x)))
-        i = y[idx]
-        # draw a vector with only an 1
-        flipped = flipper.multinomial(1, unflatten(outlier)[i, :][0], 1)[0]
-        new_y[idx] = np.where(flipped == 1)[0]
+    print("Original Image:", transform(x[1]), "\n")
+    print("Flattened Image:", torch.flatten(transform(x[1])), "\n")
+    outlier = outlier(torch.flatten(transform(x)))
+    print(outlier)
+
+    # for idx in np.arange(x.shape[0]):
+    #     # torch.from_numpy()
+    #     outlier = outlier(torch.flatten(transform(x)))
+    #     i = y[idx]
+    #     # draw a vector with only an 1
+    #     flipped = flipper.multinomial(1, unflatten(outlier)[i, :][0], 1)[0]
+    #     new_y[idx] = np.where(flipped == 1)[0]
 
     print(new_y)
 
