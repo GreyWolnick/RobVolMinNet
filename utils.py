@@ -151,6 +151,7 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         i = y[idx]
 
         sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy()
+        print("BEFORE:", sample_T)
         sample_T = row_norm(sample_T)  # Issue: only produces really low values
 
         # if idx % 1000 == 0:
