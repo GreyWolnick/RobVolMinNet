@@ -116,12 +116,6 @@ def multiclass_noisify(y, P, random_state=1):
     for idx in np.arange(m):
         i = y[idx]
         # draw a vector with only an 1
-        print(P)
-        print("I:", i)
-        print(P[i, :])
-        print(P[i, :][0])
-
-        exit()
 
         flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
@@ -145,14 +139,6 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
 
     new_y = y.copy()
 
-    # print(x.shape)
-    # print(x[1].shape)
-    #
-    # print("Original Image:", transform(x[1]), "\n")
-    # print("Flattened Image:", torch.flatten(transform(x[1])), "\n")
-    # outlier = outlier(torch.flatten(transform(x[1])))
-    # print(outlier)
-
     for idx in np.arange(x.shape[0]):
         i = y[idx]
 
@@ -162,12 +148,10 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         if idx % 1000 == 0:
             print(sample_T)
 
-        print("PRINTGIN", sample_T[i, :])
-        print("2", sample_T[i, :][0])
-        print("I:", i)
-
         flipped = flipper.multinomial(1, sample_T[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
+
+    print("NEW:", new_y)
 
     return new_y
 
