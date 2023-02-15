@@ -150,11 +150,14 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
     for idx in np.arange(x.shape[0]):
         i = y[idx]
 
+        print("I:", i)
+
         sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy()
+        print("BEFORE NORM:", sample_T)
         sample_T = row_norm(sample_T)  # Issue: only produces really low values
 
-        if idx % 1000 == 0:
-            print("Outlier T:", sample_T)
+        # if idx % 1000 == 0:
+        print("Outlier T:", sample_T)
 
         flipped = flipper.multinomial(1, sample_T[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
