@@ -148,7 +148,7 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
 
     for idx in np.arange(x.shape[0]):
         i = y[idx]
-        sample_T = outlier(torch.flatten(transform(x[idx])))
+        sample_T = outlier(torch.flatten(transform(x[idx]))).cpu().detach().numpy()
         # draw a vector with only an 1
         print(sample_T)
 
