@@ -166,7 +166,6 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
     """mistakes:
         flip in the symmetric way
     """
-    print("Just got called")
 
     P = np.ones((nb_classes, nb_classes))
     n = noise
@@ -180,8 +179,7 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
         # change the 2 below this
-        print(x_train.shape[0]*outlier_noise)
-        sample_idx = np.random.choice(x_train.shape[0], 2, replace=False)
+        sample_idx = np.random.choice(x_train.shape[0], x_train.shape[0]*outlier_noise, replace=False)
         # how do I want to split these labels so outliers are not used in multiclass_noisify
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], transform=transform,
                                                      nb_classes=nb_classes, random_state=random_state)
@@ -189,6 +187,16 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
 
         for idx, outlier_idx in enumerate(sample_idx):
             y_train_noisy[outlier_idx] = y_train_outlier[idx]
+
+        print("OUTLIER INDEXES:", sample_idx[:10])
+        print("ORIGINALS")
+        for i in range(10):
+            print(y_train[sample_idx[i]])
+
+        print("New")
+        for i in range(10):
+            print(y_train_noisy[sample_idx[i]])
+
 
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
