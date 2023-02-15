@@ -155,6 +155,9 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
         if idx % 1000 == 0:
             print(sample_T)
 
+        print(sample_T[i, :])
+        print(sample_T[i, :][0])
+
         flipped = flipper.multinomial(1, sample_T[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
 
