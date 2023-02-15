@@ -50,8 +50,8 @@ def fit(X, num_classes, filter_outlier=False):
 def dataset_split(train_images, train_labels, transform, noise_rate=0.5, split_per=0.9, random_seed=1, num_classes=10, noise_type='symmetric', outlier_noise_rate=0.05):
     clean_train_labels = train_labels[:, np.newaxis]
 
-    print("ORIGINAL:", train_labels[:10])
-    print("NEW:", clean_train_labels[:10])
+    print("Images:", train_images[:10])
+    # print("NEW:", clean_train_labels[:10])
 
     if noise_type == 'symmetric':
         noisy_labels, real_noise_rate, transition_matrix = utils.noisify_multiclass_symmetric(clean_train_labels, train_images,
