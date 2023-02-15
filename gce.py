@@ -22,7 +22,7 @@ parser.add_argument('--loss_func', type=str, default='gce')
 parser.add_argument('--vol_min', type=bool, default=True)
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
-parser.add_argument('--uniform_noise_rate', type=float, help='uniform corruption rate, should be less than 1', default=0.2)
+parser.add_argument('--uniform_noise_rate ', type=float, help='uniform corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--outlier_noise_rate', type=float, help='outlier corruption rate, should be less than 1', default=0.05)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
@@ -49,13 +49,13 @@ if args.dataset == 'mnist':
     num_classes = 10
     milestones = None
 
-    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
-                                         target_transform=transform_target,
-                                         noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type,
-                                         anchor=args.anchor)
+    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
+                                         uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                         random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
 
     val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
+                                       uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                       random_seed=args.seed, noise_type=args.noise_type)
 
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = Lenet()
@@ -107,8 +107,8 @@ if args.dataset == 'cifar100':
 
     train_data = data_load.cifar100_dataset(True, transform=transform_train(args.dataset),
                                             target_transform=transform_target,
-                                            noise_rate=args.noise_rate, random_seed=args.seed,
-                                            noise_type=args.noise_type, anchor=args.anchor)
+                                            noise_rate=args.noise_rate,
+                                            random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
     val_data = data_load.cifar100_dataset(False, transform=transform_test(args.dataset),
                                           target_transform=transform_target,
                                           noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
@@ -195,7 +195,6 @@ def checkpoint(acc, epoch, net):
     torch.save(state, './checkpoint/ckpt.t7.' +
                args.sess)
 
-exit()
 
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)

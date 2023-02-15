@@ -9,8 +9,8 @@ import torch
 
 
 class mnist_dataset(Data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, noise_rate=0.5, split_per=0.9, random_seed=1,
-                 num_class=10, noise_type='symmetric', anchor=True, outlier_noise_rate=0.05):
+    def __init__(self, train=True, transform=None, target_transform=None, uniform_noise_rate=0.5, outlier_noise_rate=0.05,
+                 split_per=0.9, random_seed=1, num_class=10, noise_type='symmetric', anchor=True):
 
         self.transform = transform
         self.target_transform = target_transform
@@ -26,7 +26,7 @@ class mnist_dataset(Data.Dataset):
         print(original_images.shape)
 
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images, original_labels, self.transform, noise_rate, split_per,
+            original_images, original_labels, self.transform, uniform_noise_rate, split_per,
             random_seed, num_class, noise_type, outlier_noise_rate)
         pass
 
