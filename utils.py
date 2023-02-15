@@ -119,27 +119,35 @@ def multiclass_noisify(y, P, random_state=1):
         flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
 
-    exit()
-
     return new_y
 
 
-def multiclass_outlier_noisify(x, transform, nb_classes=10):
+def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
     """
         adds gross outliers to training labels
     """
 
-    print(x.shape)
-    print(x)
     outlier = Outlier(784, 200, nb_classes)  # make these non-static
-
-    # print("Original Image:", self.transform(original_images[1]))
-    # print("True Label:", original_labels[1])
-    # torch.from_numpy()
-    outlier = outlier(torch.flatten(transform(x)))
     unflatten = torch.nn.Unflatten(0, (nb_classes, nb_classes))
+    flipper = np.random.RandomState(random_state)
 
-    return unflatten(outlier)
+    new_y = y.copy()
+
+    for idx in np.arange(x.shape[0]):
+        # print("Original Image:", self.transform(original_images[1]))
+        # print("True Label:", original_labels[1])
+        # torch.from_numpy()
+        outlier = outlier(torch.flatten(transform(x)))
+        i = y[idx]
+        # draw a vector with only an 1
+        flipped = flipper.multinomial(1, unflatten(outlier)[i, :][0], 1)[0]
+        new_y[idx] = np.where(flipped == 1)[0]
+
+    print(new_y)
+
+    exit()
+
+    return new_y
 
 
 def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transform, random_state=None, nb_classes=10):
@@ -160,8 +168,10 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
         print(x_train.shape)
 
         # change the 2 below this
-        y_train_outlier = multiclass_outlier_noisify(x_train[np.random.choice(x_train.shape[0], 2, replace=False), :],
-                                                     transform=transform, nb_classes=nb_classes)
+        sample_idx = np.random.choice(x_train.shape[0], 2, replace=False)
+        # how do I want to split these labels so outliers are not used in multiclass_noisify
+        y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], transform=transform,
+                                                     nb_classes=nb_classes, random_state=random_state)
         print(y_train_outlier)
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
         actual_noise = (y_train_noisy != y_train).mean()
