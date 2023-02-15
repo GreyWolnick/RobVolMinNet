@@ -211,7 +211,7 @@ def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, ran
 
 
 def create_dir(args):
-    save_dir = args.save_dir + '/' + args.dataset + '/' + args.loss_func + '/' + 'q=%f' % args.q + '/' + 'k=%f' % args.k + '/' + '%s' % args.noise_type + '/' + 'uniform_noise_rate_%f' % args.uniform_noise_rate + '/' + 'outlier_noise_rate_%f' % args.outlier_noise_rate + '/' + + 'lam=%f6_' % args.lam + '%d' % args.seed
+    save_dir = args.save_dir + '/' + args.dataset + '/' + args.loss_func + '/' + 'q=%f' % args.q + '/' + 'k=%f' % args.k + '/' + '%s' % args.noise_type + '/' + 'uniform_noise_rate_%f' % (args.uniform_noise_rate) + '/' + 'outlier_noise_rate_%f' % (args.outlier_noise_rate) + '/' + 'lam=%f6_' % args.lam + '%d' % args.seed
     if not os.path.exists(save_dir):
         os.system('mkdir -p %s' % (save_dir))
 
