@@ -132,6 +132,9 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
     flipper = np.random.RandomState(random_state)
 
     new_y = y.copy()
+    
+    print(x.shape)
+    print(x[1].shape)
 
     print("Original Image:", transform(x[1]), "\n")
     print("Flattened Image:", torch.flatten(transform(x[1])), "\n")
