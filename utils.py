@@ -139,7 +139,7 @@ def multiclass_outlier_noisify(x, y, transform, nb_classes=10, random_state=1):
     """
 
     print(x.shape, y.shape)
-    print(x.shape[0], y.shape[0])
+    print(x[0].shape, y[0].shape)
 
     outlier = Outlier(784, 200, nb_classes)  # make these non-static
     unflatten = torch.nn.Unflatten(0, (nb_classes, nb_classes))

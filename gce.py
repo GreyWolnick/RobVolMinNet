@@ -48,12 +48,17 @@ if args.dataset == 'mnist':
     num_classes = 10
     milestones = None
 
+    # data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
+    #                                      target_transform=transform_target,
+    #                                      noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type,
+    #                                      anchor=args.anchor)
+
     train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
                                          target_transform=transform_target,
                                          noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type,
                                          anchor=args.anchor)
-    val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
+    # val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
+    #                                    noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = Lenet()
     trans = sig_t(device, args.num_classes)
