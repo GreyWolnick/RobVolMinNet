@@ -178,7 +178,7 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
             P[i, i] = 1. - n
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
-        # change the 2 below this round(x_train.shape[0]*outlier_noise)
+        # change the 2 below this round(x_train.shape[0]*outlier_noise) this causes errors???
 
         sample_idx = np.random.choice(x_train.shape[0], 2, replace=False)
         # how do I want to split these labels so outliers are not used in multiclass_noisify
@@ -191,6 +191,7 @@ def noisify_multiclass_symmetric(y_train, x_train, noise, outlier_noise, transfo
 
         print("OUTLIER INDEXES:", sample_idx[:10])
         print("ORIGINALS")
+        print(y_train[:10])
         for i in range(10):
             print(y_train[sample_idx[i]])
 
