@@ -26,7 +26,7 @@ class mnist_dataset(Data.Dataset):
         print(original_images.shape)
 
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images, original_labels, self.transform, uniform_noise_rate, split_per,
+            original_images, original_labels, self.transform, 784, uniform_noise_rate, split_per,
             random_seed, num_class, noise_type, outlier_noise_rate)
         pass
 
@@ -101,11 +101,9 @@ class cifar10_dataset(Data.Dataset):
             original_labels = np.load('data/cifar10/cifar10_labels.npy')
 
         print(original_images.shape)
-        
-        exit()
 
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images, original_labels, self.transform, uniform_noise_rate, split_per,
+            original_images, original_labels, self.transform, original_images.shape[1], uniform_noise_rate, split_per,
             random_seed, num_class, noise_type, outlier_noise_rate)
 
         if self.anchor:

@@ -47,11 +47,11 @@ def fit(X, num_classes, filter_outlier=False):
 
 # flip clean labels to noisy labels
 # train set and val set split
-def dataset_split(train_images, train_labels, transform, noise_rate=0.5, split_per=0.9, random_seed=1, num_classes=10, noise_type='symmetric', outlier_noise_rate=0.05):
+def dataset_split(train_images, train_labels, transform, input_size, noise_rate=0.5, split_per=0.9, random_seed=1, num_classes=10, noise_type='symmetric', outlier_noise_rate=0.05):
     clean_train_labels = train_labels[:, np.newaxis]
 
     if noise_type == 'symmetric':
-        noisy_labels, real_noise_rate, transition_matrix = utils.noisify_multiclass_symmetric(clean_train_labels, train_images,
+        noisy_labels, real_noise_rate, transition_matrix = utils.noisify_multiclass_symmetric(clean_train_labels, train_images, input_size,
                                                 noise=noise_rate, outlier_noise=outlier_noise_rate, transform=transform,
                                                 random_state=random_seed, nb_classes=num_classes)
     elif noise_type == 'flip':
