@@ -67,12 +67,12 @@ if args.dataset == 'fashionmnist':
     num_classes = 10
     milestones = None
 
-    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
-                                         target_transform=transform_target,
-                                         noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type,
-                                         anchor=args.anchor)
+    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
+                                         uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                         random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
     val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
+                                       uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                       random_seed=args.seed, noise_type=args.noise_type)
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = Lenet()
     trans = sig_t(device, args.num_classes)
@@ -84,13 +84,12 @@ if args.dataset == 'cifar10':
     args.num_classes = 10
     milestones = [30, 60]
 
-    train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset),
-                                           target_transform=transform_target,
-                                           noise_rate=args.noise_rate, random_seed=args.seed,
-                                           noise_type=args.noise_type, anchor=args.anchor)
-    val_data = data_load.cifar10_dataset(False, transform=transform_test(args.dataset),
-                                         target_transform=transform_target,
-                                         noise_rate=args.noise_rate, random_seed=args.seed, noise_type=args.noise_type)
+    train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
+                                           uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                           random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
+    val_data = data_load.cifar10_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
+                                         uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                         random_seed=args.seed, noise_type=args.noise_type)
     test_data = data_load.cifar10_test_dataset(transform=transform_test(args.dataset),
                                                target_transform=transform_target)
     model = ResNet18(args.num_classes)

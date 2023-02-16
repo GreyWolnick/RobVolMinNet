@@ -84,8 +84,8 @@ class mnist_test_dataset(Data.Dataset):
 
 
 class cifar10_dataset(Data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, noise_rate=0.5, split_per=0.9, random_seed=1,
-                 num_class=10, noise_type='symmetric', anchor=True):
+    def __init__(self, train=True, transform=None, target_transform=None, uniform_noise_rate=0.5, outlier_noise_rate=0.05,
+                 split_per=0.9, random_seed=1, num_class=10, noise_type='symmetric', anchor=True):
 
         self.transform = transform
         self.target_transform = target_transform
@@ -101,10 +101,12 @@ class cifar10_dataset(Data.Dataset):
             original_labels = np.load('data/cifar10/cifar10_labels.npy')
 
         print(original_images.shape)
+        
+        exit()
 
         self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images,
-            original_labels, noise_rate, split_per, random_seed, num_class, noise_type)
+            original_images, original_labels, self.transform, uniform_noise_rate, split_per,
+            random_seed, num_class, noise_type, outlier_noise_rate)
 
         if self.anchor:
             if self.train:
