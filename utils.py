@@ -151,7 +151,10 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
         if input_size == 784:
             sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
         else:
-            sample_T = unflatten(outlier(torch.flatten(transform(Image.fromarray(x[idx]))))).cpu().detach().numpy()  # Issue: only produces really low values
+            img = Image.fromarray(x[idx])
+            img = transform(img)
+            img = torch.flatten(img)
+            sample_T = unflatten(outlier(img)).cpu().detach().numpy()  # Issue: only produces really low values
         sample_T = row_norm(sample_T)  # This sometimes produces rows that sum > 1
 
         if idx % 1000 == 0:
