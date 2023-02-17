@@ -206,6 +206,8 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
 
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
+        print("ACTUAL NOISE RATE:", actual_noise)
+
         y_train = y_train_noisy
 
     return y_train, actual_noise, P
