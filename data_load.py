@@ -123,7 +123,6 @@ class cifar10_dataset(Data.Dataset):
         else:
             img, label = self.val_data[index], self.val_labels[index]
 
-        print("PRE Shape:", img.shape)
         img = Image.fromarray(img)
 
         if self.transform is not None:

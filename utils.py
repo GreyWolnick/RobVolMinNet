@@ -151,9 +151,6 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
         if input_size == 784:
             sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
         else:
-            print("TRANSFORM:",transform)
-            print("original shape:", x[idx].shape)
-            print("PIL:", Image.fromarray(x[idx]))
             img = Image.fromarray(x[idx])
             img = transform(img)
             img = torch.flatten(img)
@@ -185,24 +182,26 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
             P[i, i] = 1. - n
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
-        print("IMG Shape:", x_train[0].shape)
-        # sample_idx = np.random.choice(x_train.shape[0], round(x_train.shape[0]*outlier_noise), replace=False)
-        # # how do I want to split these labels so outliers are not used in multiclass_noisify
-        # y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], input_size, transform=transform,
-        #                                              nb_classes=nb_classes, random_state=random_state)
+        sample_idx = np.random.choice(x_train.shape[0], round(x_train.shape[0]*outlier_noise), replace=False)
+        # how do I want to split these labels so outliers are not used in multiclass_noisify
+        if input_size != 784:
+            x_train = x_train.reshape((x_train.shape[0], 3, 32, 32))
+            x_train = x_train.transpose((0, 2, 3, 1))
+        y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], input_size, transform=transform,
+                                                     nb_classes=nb_classes, random_state=random_state)
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
 
-        # for idx, outlier_idx in enumerate(sample_idx):
-        #     y_train_noisy[outlier_idx] = y_train_outlier[idx]
-        #
-        # print("OUTLIER INDEXES:", sample_idx[:10])
-        # print("ORIGINALS")
-        # for i in range(10):
-        #     print(y_train[sample_idx[i]])
-        #
-        # print("New")
-        # for i in range(10):
-        #     print(y_train_noisy[sample_idx[i]])
+        for idx, outlier_idx in enumerate(sample_idx):
+            y_train_noisy[outlier_idx] = y_train_outlier[idx]
+
+        print("OUTLIER INDEXES:", sample_idx[:10])
+        print("ORIGINALS")
+        for i in range(10):
+            print(y_train[sample_idx[i]])
+
+        print("New")
+        for i in range(10):
+            print(y_train_noisy[sample_idx[i]])
 
 
         actual_noise = (y_train_noisy != y_train).mean()
