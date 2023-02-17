@@ -151,6 +151,9 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
         if input_size == 784:
             sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
         else:
+            print("TRANSFORM:",transform)
+            print("original shape:", x[idx].shape)
+            print("PIL:", Image.fromarray(x[idx]))
             img = Image.fromarray(x[idx])
             img = transform(img)
             img = torch.flatten(img)
