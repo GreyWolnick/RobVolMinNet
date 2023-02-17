@@ -7,6 +7,7 @@ import numpy as np
 from numpy.testing import assert_array_almost_equal
 
 from models import Outlier
+from PIL import Image
 
 
 def check_integrity(fpath, md5):
@@ -147,7 +148,10 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
     for idx in np.arange(x.shape[0]):
         i = y[idx]
 
-        sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
+        if input_size == 784:
+            sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
+        else:
+            sample_T = unflatten(outlier(torch.flatten(transform(Image.fromarray(x[idx]))))).cpu().detach().numpy()  # Issue: only produces really low values
         sample_T = row_norm(sample_T)  # This sometimes produces rows that sum > 1
 
         if idx % 1000 == 0:
