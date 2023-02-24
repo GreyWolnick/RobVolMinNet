@@ -13,6 +13,10 @@ class Outlier(nn.Module):
         self.relu = nn.ReLU()
         self.l3 = nn.Linear(hidden_size, num_classes**2)
 
+        # Initialize weights to be random
+        nn.init.xavier_uniform_(self.l1.weight)
+        nn.init.xavier_uniform_(self.l3.weight)
+
     def forward(self, x):
         out = self.l1(x)
         out = self.relu(out)
