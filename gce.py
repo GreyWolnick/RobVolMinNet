@@ -222,8 +222,12 @@ for epoch in range(args.n_epoch):
         model = now['current_net']
         model.train()
 
-    for batch_idx, (inputs, targets) in enumerate(train_loader):
-        indexes = [i for i in range(0, len(inputs))]
+    loss_list = []
+
+    for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
+        print(indexes)
+        exit()
+        # indexes = [i for i in range(0, len(inputs))]
         inputs, targets = inputs.cuda(), targets.cuda()
 
         optimizer_es.zero_grad()
@@ -243,6 +247,8 @@ for epoch in range(args.n_epoch):
             ce_loss = criterion(out.log(), targets.long())
 
         loss = ce_loss + args.lam * vol_loss
+
+        loss_list
 
         train_loss += loss.item()
         train_vol_loss += vol_loss.item()

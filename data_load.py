@@ -16,6 +16,8 @@ class mnist_dataset(Data.Dataset):
         self.target_transform = target_transform
         self.train = train
         self.anchor = anchor
+        self.outlier_indexes = []
+
         if anchor:
             original_images = np.load('data/mnist/train_images.npy')
             original_labels = np.load('data/mnist/train_labels.npy')
@@ -25,7 +27,7 @@ class mnist_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
+        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t, self.outlier_indexes = tools.dataset_split(
             original_images, original_labels, self.transform, 784, uniform_noise_rate, split_per,
             random_seed, num_class, noise_type, outlier_noise_rate)
         pass
@@ -91,6 +93,7 @@ class cifar10_dataset(Data.Dataset):
         self.target_transform = target_transform
         self.train = train
         self.anchor = anchor
+        self.outlier_indexes = []
 
         if self.anchor:
             original_images = np.load('data/cifar10/train_images.npy')
@@ -102,7 +105,7 @@ class cifar10_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
+        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t, self.outlier_indexes = tools.dataset_split(
             original_images, original_labels, self.transform, original_images.shape[1], uniform_noise_rate, split_per,
             random_seed, num_class, noise_type, outlier_noise_rate)
 
@@ -118,7 +121,7 @@ class cifar10_dataset(Data.Dataset):
     def __getitem__(self, index):
 
         if self.train:
-            img, label = self.train_data[index], self.train_labels[index]
+            img, label, index = self.train_data[index], self.train_labels[index], index
 
         else:
             img, label = self.val_data[index], self.val_labels[index]

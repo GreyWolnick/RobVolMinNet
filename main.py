@@ -1,5 +1,3 @@
-import sklearn.decomposition
-
 import tools
 import data_load
 import argparse
@@ -9,6 +7,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from transformer import transform_train, transform_test, transform_target
 from torch.optim.lr_scheduler import MultiStepLR
+from truncatedloss import TruncatedLoss
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, help='initial learning rate', default=0.01)
@@ -26,6 +25,12 @@ parser.add_argument('--weight_decay', type=float, help='weight_decay for trainin
 parser.add_argument('--lam', type=float, default=0.0001)
 parser.add_argument('--anchor', action='store_false')
 
+parser.add_argument('--sess', default='default', type=str, help='session id')
+parser.add_argument('--start_prune', default=40, type=int,
+                    help='number of total epochs to run')
+parser.add_argument('--gamma', type=float, default=0.1)
+parser.add_argument('--schedule', nargs='+', type=int)
+
 args = parser.parse_args()
 np.set_printoptions(precision=2, suppress=True)
 
@@ -36,9 +41,9 @@ torch.cuda.manual_seed(args.seed)
 # GPU
 device = torch.device('cuda:' + str(args.device))
 
-args.dataset = 'cifar100'
-args.noise_rate = 0.5
-args.exp_type = 'experimental'
+args.dataset = 'mnist'
+args.noise_rate = 0.2
+args.exp_type = 'new_gce'
 
 if args.dataset == 'mnist':
     args.n_epoch = 60
@@ -105,25 +110,36 @@ optimizer_es = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weigh
 scheduler1 = MultiStepLR(optimizer_es, milestones=milestones, gamma=0.1)
 scheduler2 = MultiStepLR(optimizer_trans, milestones=milestones, gamma=0.1)
 
-# data_loader
-train_loader = DataLoader(dataset=train_data,
-                          batch_size=args.batch_size,
-                          shuffle=True,
-                          num_workers=4,
-                          drop_last=False)
+# scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer_es, milestones=args.schedule, gamma=args.gamma)
 
-val_loader = DataLoader(dataset=val_data,
-                        batch_size=args.batch_size,
-                        shuffle=False,
-                        num_workers=4,
-                        drop_last=False)
+# data_loader NORMAL
+# train_loader = DataLoader(dataset=train_data,
+#                           batch_size=args.batch_size,
+#                           shuffle=True,
+#                           num_workers=4,
+#                           drop_last=False)
+#
+# val_loader = DataLoader(dataset=val_data,
+#                         batch_size=args.batch_size,
+#                         shuffle=False,
+#                         num_workers=4,
+#                         drop_last=False)
+#
+# test_loader = DataLoader(dataset=test_data,
+#                          batch_size=args.batch_size,
+#                          num_workers=4,
+#                          drop_last=False)
 
-test_loader = DataLoader(dataset=test_data,
-                         batch_size=args.batch_size,
-                         num_workers=4,
-                         drop_last=False)
+# DATA LOADER TRUNCATED
+test_loader = torch.utils.data.DataLoader(
+    test_data, batch_size=100, shuffle=False, num_workers=2)
 
-loss_func_ce = F.nll_loss
+train_loader = torch.utils.data.DataLoader(
+    train_data, batch_size=args.batch_size, shuffle=True, num_workers=2)
+
+# criterion = F.nll_loss  # Negative Log Likelihood Loss
+# criterion = torch.nn.L1Loss()  # MAE
+criterion = TruncatedLoss(trainset_size=len(train_data)).cuda()  # Truncated Loss
 
 # cuda
 if torch.cuda.is_available:
@@ -140,6 +156,8 @@ train_loss_list = []
 test_loss_list = []
 ce_loss_list = []
 
+best_acc = 0
+
 print(train_data.t, file=logs, flush=True)
 
 t = trans()
@@ -152,160 +170,265 @@ print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
 
 
 def main():
-    initial = trans()
-    t = None
+    train_acc_list = []
+    test_acc_list = []
     for epoch in range(args.n_epoch):
+        train_loss, train_acc = train(epoch, model)
+        train_loss_list.append(train_loss)
+        train_acc_list.append(train_acc)
+        test_loss, test_acc = test(epoch)
+        test_loss_list.append(test_loss)
+        test_acc_list.append(test_acc)
 
-        print('epoch {}'.format(epoch + 1), file=logs, flush=True)
-        model.train()
-        # trans.train()
-
-        train_loss = 0.
-        train_vol_loss = 0.
-        train_acc = 0.
-        val_loss = 0.
-        val_acc = 0.
-        eval_loss = 0.
-        eval_acc = 0.
-        ce_loss_total = 0.
-
-        for batch_x, batch_y in train_loader:
-            batch_x = batch_x.to(device)
-            batch_y = batch_y.to(device)
-
-            optimizer_es.zero_grad()
-            # optimizer_trans.zero_grad()
-
-            clean = model(batch_x)
-
-            # t = trans()
-            if t:
-                # t = sklearn.decomposition.NMF()
-                t, h, n = tools._fit_coordinate_descent(batch_y.long().reshape(-1, 1).detach().cpu(), t.detach().cpu(), clean.reshape(-1, 1).detach().cpu(), tol=1e-4, max_iter=200, l1_reg_W=0,
-                                                  l1_reg_H=0, l2_reg_W=0, l2_reg_H=0, update_H=False, verbose=0,
-                                                  shuffle=False, random_state=None)
-            else:
-                t, h, n = tools._fit_coordinate_descent(batch_y.long().reshape(-1, 1).detach().cpu(), initial.detach().cpu(), clean.reshape(-1, 1).detach().cpu(), tol=1e-4, max_iter=200, l1_reg_W=0,
-                                                  l1_reg_H=0, l2_reg_W=0, l2_reg_H=0, update_H=False, verbose=0,
-                                                  shuffle=False, random_state=None)
-            out = torch.mm(clean, t)
-
-            vol_loss = t.slogdet().logabsdet
-
-            ce_loss = loss_func_ce(out.log(), batch_y.long())
-            ce_loss_total += ce_loss.item()
-            loss = ce_loss + args.lam * vol_loss
-
-            train_loss += loss.item()
-            train_vol_loss += vol_loss.item()
-
-            pred = torch.max(out, 1)[1]
-            train_correct = (pred == batch_y).sum()
-            train_acc += train_correct.item()
-
-            loss.backward()
-            optimizer_es.step()
-            # optimizer_trans.step()
-
-        print(
-            'Train Loss: {:.6f}, Vol_loss: {:.6f}  Acc: {:.6f}'.format(train_loss / (len(train_data)) * args.batch_size,
-                                                                       train_vol_loss / (
-                                                                           len(train_data)) * args.batch_size,
-                                                                       train_acc / (len(train_data))), file=logs,
-            flush=True)
-
-        train_loss_list.append(train_loss / (len(train_data)) * args.batch_size)  # Add train loss to list
-        t_vol_list.append(train_vol_loss / (len(train_data)) * args.batch_size)  # Add T Volume Loss to list
-        ce_loss_list.append(ce_loss_total)  # Add total CE loss to list
-
+        # scheduler.step()
         scheduler1.step()
         scheduler2.step()
 
-        with torch.no_grad():
-            model.eval()
-            trans.eval()
-            for batch_x, batch_y in val_loader:
-                batch_x = batch_x.to(device)
-                batch_y = batch_y.to(device)
-                clean = model(batch_x)
-                # t = trans()
-                t, h, n = tools._fit_coordinate_descent(batch_y.long().reshape(-1, 1).detach().cpu(), t.detach().cpu(), clean.reshape(-1, 1).detach().cpu(), tol=1e-4, max_iter=200, l1_reg_W=0,
-                                                  l1_reg_H=0, l2_reg_W=0, l2_reg_H=0, update_H=False, verbose=0,
-                                                  shuffle=False, random_state=None)
+        print(f"Train Loss: {train_loss_list}\nTrain Accuracy: {train_acc_list}")
+        print(f"Test Loss: {test_loss_list}\nTest Accuracy: {test_acc_list}")
+    #
+    #     print('epoch {}'.format(epoch + 1), file=logs, flush=True)
+    #
+    #     model.train()
+    #     trans.train()
+    #
+    #     train_loss = 0.
+    #     train_vol_loss = 0.
+    #     train_acc = 0.
+    #     val_loss = 0.
+    #     val_acc = 0.
+    #     eval_loss = 0.
+    #     eval_acc = 0.
+    #     ce_loss_total = 0.
+    #
+    #     for batch_x, batch_y in train_loader:
+    #         batch_x = batch_x.to(device)
+    #         batch_y = batch_y.to(device)
+    #
+    #         optimizer_es.zero_grad()
+    #         optimizer_trans.zero_grad()
+    #
+    #         clean = model(batch_x)
+    #
+    #         t = trans()
+    #
+    #         out = torch.mm(clean, t)
+    #
+    #         vol_loss = t.slogdet().logabsdet
+    #
+    #         print(out.log().shape(), F.one_hot(batch_y.long(), args.num_classes))
+    #         ce_loss = criterion(out.log(), F.one_hot(batch_y.long(), num_classes))
+    #         loss = ce_loss + args.lam * vol_loss
+    #
+    #         train_loss += loss.item()
+    #         train_vol_loss += vol_loss.item()
+    #
+    #         pred = torch.max(out, 1)[1]
+    #         train_correct = (pred == batch_y).sum()
+    #         train_acc += train_correct.item()
+    #
+    #         loss.backward()
+    #         optimizer_es.step()
+    #         optimizer_trans.step()
+    #
+    #     print(
+    #         'Train Loss: {:.6f}, Vol_loss: {:.6f}  Acc: {:.6f}'.format(train_loss / (len(train_data)) * args.batch_size,
+    #                                                                    train_vol_loss / (
+    #                                                                        len(train_data)) * args.batch_size,
+    #                                                                    train_acc / (len(train_data))), file=logs,
+    #         flush=True)
+    #
+    #     scheduler1.step()
+    #     scheduler2.step()
+    #
+    #     with torch.no_grad():
+    #         model.eval()
+    #         trans.eval()
+    #         for batch_x, batch_y in val_loader:
+    #             batch_x = batch_x.to(device)
+    #             batch_y = batch_y.to(device)
+    #             clean = model(batch_x)
+    #             t = trans()
+    #
+    #             out = torch.mm(clean, t)
+    #             loss = criterion(out.log(), batch_y.long())
+    #             val_loss += loss.item()
+    #             pred = torch.max(out, 1)[1]
+    #             val_correct = (pred == batch_y).sum()
+    #             val_acc += val_correct.item()
+    #
+    #     print('Val Loss: {:.6f}, Acc: {:.6f}'.format(val_loss / (len(val_data)) * args.batch_size,
+    #                                                  val_acc / (len(val_data))), file=logs, flush=True)
+    #
+    #     with torch.no_grad():
+    #         model.eval()
+    #         trans.eval()
+    #
+    #         for batch_x, batch_y in test_loader:
+    #             batch_x = batch_x.to(device)
+    #             batch_y = batch_y.to(device)
+    #             clean = model(batch_x)
+    #
+    #             loss = criterion(clean.log(), batch_y.long())
+    #             eval_loss += loss.item()
+    #             pred = torch.max(clean, 1)[1]
+    #             eval_correct = (pred == batch_y).sum()
+    #             eval_acc += eval_correct.item()
+    #
+    #         print('Test Loss: {:.6f}, Acc: {:.6f}'.format(eval_loss / (len(test_data)) * args.batch_size,
+    #                                                       eval_acc / (len(test_data))), file=logs, flush=True)
+    #
+    #         est_T = t.detach().cpu().numpy()
+    #         estimate_error = tools.error(est_T, train_data.t)
+    #
+    #         matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (epoch + 1)
+    #         np.save(matrix_path, est_T)
+    #
+    #         print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
+    #         print(est_T, file=logs, flush=True)
+    #         t_est_list.append(estimate_error)  # Add T Estimation Error to list
+    #         test_loss_list.append(eval_loss / (len(test_data)) * args.batch_size)  # Add test loss to list
+    #
+    #     val_loss_list.append(val_loss / (len(val_data)))
+    #     val_acc_list.append(val_acc / (len(val_data)))
+    #     test_acc_list.append(eval_acc / (len(test_data)))
+    #
+    # val_loss_array = np.array(val_loss_list)
+    # val_acc_array = np.array(val_acc_list)
+    # model_index = np.argmin(val_loss_array)
+    # model_index_acc = np.argmax(val_acc_array)
+    #
+    # matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (model_index + 1)
+    # final_est_T = np.load(matrix_path)
+    # final_estimate_error = tools.error(final_est_T, train_data.t)
+    #
+    # matrix_path_acc = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (model_index_acc + 1)
+    # final_est_T_acc = np.load(matrix_path_acc)
+    # final_estimate_error_acc = tools.error(final_est_T_acc, train_data.t)
+    #
+    # print("Final test accuracy: %f" % test_acc_list[model_index], file=logs, flush=True)
+    # print("Final test accuracy acc: %f" % test_acc_list[model_index_acc], file=logs, flush=True)
+    # print("Final estimation error loss: %f" % final_estimate_error, file=logs, flush=True)
+    # print("Final estimation error loss acc: %f" % final_estimate_error_acc, file=logs, flush=True)
+    # print("Best epoch: %d" % model_index, file=logs, flush=True)
+    # print(final_est_T, file=logs, flush=True)
+    #
+    # print("Summary Metrics:", file=logs, flush=True)
+    # print("Number of Epochs:", args.n_epoch, file=logs, flush=True)
+    # print("Lambda:", args.lam, file=logs, flush=True)
+    # print("test_acc_list_2 =", test_acc_list, file=logs, flush=True)
+    # print("t_est_list_2", t_est_list, file=logs, flush=True)
+    # print("t_vol_list_2", t_vol_list, file=logs, flush=True)
+    # print("train_loss_list_2", train_loss_list, file=logs, flush=True)
+    # print("test_loss_list_2", test_loss_list, file=logs, flush=True)
+    # print("ce_loss_list_2", ce_loss_list, file=logs, flush=True)
+    # logs.close()
 
-                out = torch.mm(clean, t)
-                loss = loss_func_ce(out.log(), batch_y.long())
-                val_loss += loss.item()
-                pred = torch.max(out, 1)[1]
-                val_correct = (pred == batch_y).sum()
-                val_acc += val_correct.item()
 
-        print('Val Loss: {:.6f}, Acc: {:.6f}'.format(val_loss / (len(val_data)) * args.batch_size,
-                                                     val_acc / (len(val_data))), file=logs, flush=True)
+def train(epoch, model):
+    print('\nEpoch: %d' % epoch)
+    model.train()
+    trans.train()
+    train_loss = 0.
+    train_acc = 0.
 
-        with torch.no_grad():
-            model.eval()
-            trans.eval()
+    if (epoch + 1) >= args.start_prune and (epoch + 1) % 10 == 0:
+        checkpoint = torch.load('./checkpoint/ckpt.t7.' + args.sess)
+        model = checkpoint['net']
+        model.eval()
+        for batch_idx, (inputs, targets) in enumerate(train_loader):
+            indexes = [i for i in range(0, len(inputs))]
+            inputs, targets = inputs.cuda(), targets.cuda()
+            outputs = model(inputs)
+            criterion.update_weight(outputs, targets, indexes)
+        now = torch.load('./checkpoint/current_net')
+        model = now['current_net']
+        model.train()
 
-            for batch_x, batch_y in test_loader:
-                batch_x = batch_x.to(device)
-                batch_y = batch_y.to(device)
-                clean = model(batch_x)
+    for batch_idx, (inputs, targets) in enumerate(train_loader):
+        indexes = [i for i in range(0, len(inputs))]
+        inputs, targets = inputs.cuda(), targets.cuda()
 
-                loss = loss_func_ce(clean.log(), batch_y.long())
-                eval_loss += loss.item()
-                pred = torch.max(clean, 1)[1]
-                eval_correct = (pred == batch_y).sum()
-                eval_acc += eval_correct.item()
+        optimizer_es.zero_grad()
+        optimizer_trans.zero_grad()
 
-            print('Test Loss: {:.6f}, Acc: {:.6f}'.format(eval_loss / (len(test_data)) * args.batch_size,
-                                                          eval_acc / (len(test_data))), file=logs, flush=True)
+        clean = model(inputs)
 
-            est_T = t.detach().cpu().numpy()
-            estimate_error = tools.error(est_T, train_data.t)
+        t = trans()
 
-            matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (epoch + 1)
-            np.save(matrix_path, est_T)
+        out = torch.mm(clean, t)
 
-            print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
-            print(est_T, file=logs, flush=True)
-            t_est_list.append(estimate_error)  # Add T Estimation Error to list
-            test_loss_list.append(eval_loss / (len(test_data)) * args.batch_size)  # Add test loss to list
+        vol_loss = t.slogdet().logabsdet
 
-        val_loss_list.append(val_loss / (len(val_data)))
-        val_acc_list.append(val_acc / (len(val_data)))
-        test_acc_list.append(eval_acc / (len(test_data)))  # Add Classification Accuracy to list
+        # ce_loss = criterion(clean, targets, indexes)
+        ce_loss = criterion(out.log(), targets, indexes)
+        loss = ce_loss + args.lam * vol_loss
+        # loss = ce_loss
 
-    val_loss_array = np.array(val_loss_list)
-    val_acc_array = np.array(val_acc_list)
-    model_index = np.argmin(val_loss_array)
-    model_index_acc = np.argmax(val_acc_array)
+        train_loss += loss.item()
+        # train_vol_loss += vol_loss.item()
 
-    matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (model_index + 1)
-    final_est_T = np.load(matrix_path)
-    final_estimate_error = tools.error(final_est_T, train_data.t)
+        pred = torch.max(out, 1)[1]
+        train_correct = (pred == targets).sum()
+        train_acc += train_correct.item()
 
-    matrix_path_acc = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (model_index_acc + 1)
-    final_est_T_acc = np.load(matrix_path_acc)
-    final_estimate_error_acc = tools.error(final_est_T_acc, train_data.t)
+        loss.backward()
+        optimizer_es.step()
+        optimizer_trans.step()
 
-    print("Final test accuracy: %f" % test_acc_list[model_index], file=logs, flush=True)
-    print("Final test accuracy acc: %f" % test_acc_list[model_index_acc], file=logs, flush=True)
-    print("Final estimation error loss: %f" % final_estimate_error, file=logs, flush=True)
-    print("Final estimation error loss acc: %f" % final_estimate_error_acc, file=logs, flush=True)
-    print("Best epoch: %d" % model_index, file=logs, flush=True)
-    print(final_est_T, file=logs, flush=True)
+        est_T = t.detach().cpu().numpy()
 
-    print("Summary Metrics:", file=logs, flush=True)
-    print("Number of Epochs:", args.n_epoch, file=logs, flush=True)
-    print("Lambda:", args.lam, file=logs, flush=True)
-    print("test_acc_list_2 =", test_acc_list, file=logs, flush=True)
-    print("t_est_list_2", t_est_list, file=logs, flush=True)
-    print("t_vol_list_2", t_vol_list, file=logs, flush=True)
-    print("train_loss_list_2", train_loss_list, file=logs, flush=True)
-    print("test_loss_list_2", test_loss_list, file=logs, flush=True)
-    print("ce_loss_list_2", ce_loss_list, file=logs, flush=True)
-    logs.close()
+        print(est_T, file=logs, flush=True)
+    return (train_loss / (len(train_data)) * args.batch_size, train_acc / (len(train_data)))
+
+
+def test(epoch):
+    global best_acc
+    eval_acc = 0.
+    eval_loss = 0.
+    with torch.no_grad():
+        model.eval()
+        trans.eval()
+        for batch_idx, (inputs, targets) in enumerate(test_loader):
+            indexes = [i for i in range(0, len(inputs))]
+            inputs, targets = inputs.cuda(), targets.cuda()
+            clean = model(inputs)
+            loss = criterion(clean, targets, indexes)
+
+            eval_loss += loss.item()
+            pred = torch.max(clean, 1)[1]
+            eval_correct = (pred == targets).sum()
+            eval_acc += eval_correct.item()
+
+        # Save checkpoint.
+        acc = eval_acc / (len(test_data))
+        if acc > best_acc:
+            best_acc = acc
+            checkpoint(acc, epoch, model)
+        if not os.path.isdir('checkpoint'):
+            os.mkdir('checkpoint')
+
+        state = {
+            'current_net': model,
+        }
+        torch.save(state, './checkpoint/current_net')
+
+        return (eval_loss / (len(test_data)) * args.batch_size, eval_acc / (len(test_data)))
+
+
+def checkpoint(acc, epoch, net):
+    # Save checkpoint.
+    print('Saving..')
+    state = {
+        'net': net,
+        'acc': acc,
+        'epoch': epoch,
+        'rng_state': torch.get_rng_state()
+    }
+    if not os.path.isdir('checkpoint'):
+        os.mkdir('checkpoint')
+    torch.save(state, './checkpoint/ckpt.t7.' +
+               args.sess)
 
 
 if __name__ == '__main__':

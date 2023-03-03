@@ -210,7 +210,7 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
 
         y_train = y_train_noisy
 
-    return y_train, actual_noise, P
+    return y_train, actual_noise, P, sample_idx
 
 
 def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, random_state=1):
