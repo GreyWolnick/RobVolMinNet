@@ -170,6 +170,7 @@ t_vol_list = []
 best_acc = 0
 
 print(train_data.t, file=logs, flush=True)
+print(train_data.outlier_indexes, file=logs, flush=True)
 
 t = trans()
 est_T = t.detach().cpu().numpy()
@@ -224,12 +225,7 @@ for epoch in range(args.n_epoch):
 
     loss_list = []
 
-    for batch_idx, tup in enumerate(train_loader):
-        print(len(tup))
-        # (inputs, targets)
-        # print(indexes)
-        exit()
-        # indexes = [i for i in range(0, len(inputs))]
+    for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
         inputs, targets = inputs.cuda(), targets.cuda()
 
         optimizer_es.zero_grad()
@@ -250,7 +246,8 @@ for epoch in range(args.n_epoch):
 
         loss = ce_loss + args.lam * vol_loss
 
-        loss_list
+        if epoch % 10 == 0:
+            loss_list.append(loss.item())
 
         train_loss += loss.item()
         train_vol_loss += vol_loss.item()
@@ -266,9 +263,11 @@ for epoch in range(args.n_epoch):
     print(
         'Train Loss: {:.6f}, Vol_loss: {:.6f}  Acc: {:.6f}'.format(train_loss / (len(train_data)) * args.batch_size,
                                                                    train_vol_loss / (
-                                                                       len(train_data)) * args.batch_size,
-                                                                   train_acc / (len(train_data))), file=logs,
-        flush=True)
+                                                                    len(train_data)) * args.batch_size,
+                                                                   train_acc / (len(train_data))), file=logs, flush=True)
+    if epoch % 10 == 0:
+        print(f"Batch indexes {indexes}", file=logs, flush=True)
+        print(f"Epoch {epoch} training loss list {loss_list}", file=logs, flush=True)
 
     scheduler1.step()
     scheduler2.step()

@@ -47,7 +47,7 @@ class mnist_dataset(Data.Dataset):
         if self.target_transform is not None:
             label = self.target_transform(label)
 
-        return img, label
+        return img, label, index
 
     def __len__(self):
 
@@ -79,7 +79,7 @@ class mnist_test_dataset(Data.Dataset):
         if self.target_transform is not None:
             label = self.target_transform(label)
 
-        return img, label
+        return img, label, index
 
     def __len__(self):
         return len(self.test_data)
@@ -119,12 +119,11 @@ class cifar10_dataset(Data.Dataset):
                 self.val_data = self.val_data.transpose((0, 2, 3, 1))
 
     def __getitem__(self, index):
-        print("Item index:", index)
         if self.train:
-            img, label, index = self.train_data[index], self.train_labels[index], index
+            img, label = self.train_data[index], self.train_labels[index]
 
         else:
-            img, label, index = self.val_data[index], self.val_labels[index], index
+            img, label = self.val_data[index], self.val_labels[index]
 
         img = Image.fromarray(img)
 
@@ -134,7 +133,7 @@ class cifar10_dataset(Data.Dataset):
         if self.target_transform is not None:
             label = self.target_transform(label)
 
-        return img, label
+        return img, label, index
 
     def __len__(self):
 
@@ -168,7 +167,7 @@ class cifar10_test_dataset(Data.Dataset):
         if self.target_transform is not None:
             label = self.target_transform(label)
 
-        return img, label
+        return img, label, index
 
     def __len__(self):
         return len(self.test_data)
