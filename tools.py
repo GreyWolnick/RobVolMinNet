@@ -15,14 +15,17 @@ def error(T, T_true):
 
 
 def get_estimation_error(T, T_true):
-    M = np.shape(T)[0]
-    error = 0
-    for i in range(M):
-        row_ind, col_ind = linear_sum_assignment(-np.dot(np.transpose(T[i]),T_true[i]))
-        T[i] = T[i, :, col_ind]
-        error += np.sum(np.abs(T[i]-T_true[i]))/np.sum(np.abs(T_true[i]))
-    error = error / M
+    error = np.sum(np.abs(T - T_true)) / np.sum(np.abs(T_true))
     return error
+
+    # M = np.shape(T)[0]
+    # error = 0
+    # for i in range(M):
+    #     row_ind, col_ind = linear_sum_assignment(-np.dot(np.transpose(T[i]),T_true[i]))
+    #     T[i] = T[i, :, col_ind]
+    #     error += np.sum(np.abs(T[i]-T_true[i]))/np.sum(np.abs(T_true[i]))
+    # error = error / M
+    # return error
 
 
 def transition_matrix_generate(noise_rate=0.5, num_classes=10):
