@@ -22,14 +22,15 @@ parser.add_argument('--loss_func', type=str, default='gce')
 parser.add_argument('--vol_min', type=bool, default=True)
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
-parser.add_argument('--uniform_noise_rate', type=float, help='uniform corruption rate, should be less than 1', default=0.2)
-parser.add_argument('--outlier_noise_rate', type=float, help='outlier corruption rate, should be less than 1', default=0.05)
+parser.add_argument('--indep_noise_rate', type=float, help='instance independent corruption rate, should be less than 1', default=0.2)
+parser.add_argument('--dep_noise_rate', type=float, help='instance dependent corruption rate, should be less than 1', default=0.05)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--device', type=int, default=0)
 parser.add_argument('--weight_decay', type=float, help='weight_decay for training', default=1e-4)
 parser.add_argument('--lam', type=float, default=0.0001)
 parser.add_argument('--anchor', action='store_false')
+parser.add_argument('--store_loss', type=int, help='bool to store sample loss values every 10 epochs, should be 0 or 1', default=0)
 
 parser.add_argument('--sess', default='default', type=str, help='session id')
 parser.add_argument('--start_prune', default=40, type=int, help='number of total epochs to run')
@@ -50,11 +51,11 @@ if args.dataset == 'mnist':
     milestones = None
 
     train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
-                                         uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                         uniform_noise_rate=args.indep_noise_rate, outlier_noise_rate=args.dep_noise_rate,
                                          random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
 
     val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                       uniform_noise_rate=args.indep_noise_rate, outlier_noise_rate=args.dep_noise_rate,
                                        random_seed=args.seed, noise_type=args.noise_type)
 
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
@@ -68,10 +69,10 @@ if args.dataset == 'fashionmnist':
     milestones = None
 
     train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
-                                         uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                         uniform_noise_rate=args.indep_noise_rate, outlier_noise_rate=args.dep_noise_rate,
                                          random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
     val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                       uniform_noise_rate=args.indep_noise_rate, outlier_noise_rate=args.dep_noise_rate,
                                        random_seed=args.seed, noise_type=args.noise_type)
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = Lenet()
@@ -85,10 +86,10 @@ if args.dataset == 'cifar10':
     milestones = [30, 60]
 
     train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
-                                           uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                           uniform_noise_rate=args.indep_noise_rate, outlier_noise_rate=args.dep_noise_rate,
                                            random_seed=args.seed, noise_type=args.noise_type, anchor=args.anchor)
     val_data = data_load.cifar10_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                         uniform_noise_rate=args.uniform_noise_rate, outlier_noise_rate=args.outlier_noise_rate,
+                                         uniform_noise_rate=args.indep_noise_rate, outlier_noise_rate=args.dep_noise_rate,
                                          random_seed=args.seed, noise_type=args.noise_type)
     test_data = data_load.cifar10_test_dataset(transform=transform_test(args.dataset),
                                                target_transform=transform_target)
@@ -170,13 +171,16 @@ t_vol_list = []
 best_acc = 0
 
 print(train_data.t, file=logs, flush=True)
-# print(train_data.outlier_indexes, file=logs, flush=True)  Won't actually print
+with np.printoptions(threshold=np.inf):
+    print(train_data.outlier_indexes, file=logs, flush=True)
+
 
 t = trans()
 est_T = t.detach().cpu().numpy()
 print(est_T, file=logs, flush=True)
 
-estimate_error = tools.error(est_T, train_data.t)
+# estimate_error = tools.error(est_T, train_data.t)
+estimate_error = tools.get_estimation_error(est_T, train_data.t)
 
 print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
 
@@ -246,7 +250,7 @@ for epoch in range(args.n_epoch):
 
         loss = ce_loss + args.lam * vol_loss
 
-        if epoch % 10 == 0:
+        if args.store_loss and epoch % 10 == 0:
             loss_list.append(loss.item())
 
         train_loss += loss.item()
@@ -265,7 +269,7 @@ for epoch in range(args.n_epoch):
                                                                    train_vol_loss / (
                                                                     len(train_data)) * args.batch_size,
                                                                    train_acc / (len(train_data))), file=logs, flush=True)
-    if epoch % 10 == 0:
+    if args.store_loss and epoch % 10 == 0:
         print(f"Batch indexes {indexes}", file=logs, flush=True)
         for idx in indexes:
             if idx in train_data.outlier_indexes:
@@ -338,7 +342,8 @@ for epoch in range(args.n_epoch):
         torch.save(state, './checkpoint/current_net')
 
         est_T = t.detach().cpu().numpy()
-        estimate_error = tools.error(est_T, train_data.t)
+        # estimate_error = tools.error(est_T, train_data.t)
+        estimate_error = tools.get_estimation_error(est_T, train_data.t)
 
         matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (epoch + 1)
         np.save(matrix_path, est_T)
@@ -362,11 +367,13 @@ model_index_acc = np.argmax(val_acc_array)
 
 matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (model_index + 1)
 final_est_T = np.load(matrix_path)
-final_estimate_error = tools.error(final_est_T, train_data.t)
+# final_estimate_error = tools.error(final_est_T, train_data.t)
+final_estimate_error = tools.get_estimation_error(final_est_T, train_data.t)
 
 matrix_path_acc = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (model_index_acc + 1)
 final_est_T_acc = np.load(matrix_path_acc)
-final_estimate_error_acc = tools.error(final_est_T_acc, train_data.t)
+# final_estimate_error_acc = tools.error(final_est_T_acc, train_data.t)
+final_estimate_error_acc = tools.get_estimation_error(final_est_T_acc, train_data.t)
 
 print("Final test accuracy: %f" % test_acc_list[model_index], file=logs, flush=True)
 print("Final test accuracy acc: %f" % test_acc_list[model_index_acc], file=logs, flush=True)
