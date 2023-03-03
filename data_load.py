@@ -119,7 +119,7 @@ class cifar10_dataset(Data.Dataset):
                 self.val_data = self.val_data.transpose((0, 2, 3, 1))
 
     def __getitem__(self, index):
-
+        print("GET ITEM CALLED")
         if self.train:
             img, label, index = self.train_data[index], self.train_labels[index], index
 

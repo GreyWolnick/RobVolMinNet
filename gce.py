@@ -224,8 +224,8 @@ for epoch in range(args.n_epoch):
 
     loss_list = []
 
-    for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
-        print(indexes)
+    for batch_idx, (inputs, targets) in enumerate(train_loader):
+        # print(indexes)
         exit()
         # indexes = [i for i in range(0, len(inputs))]
         inputs, targets = inputs.cuda(), targets.cuda()
