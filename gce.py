@@ -170,7 +170,7 @@ t_vol_list = []
 best_acc = 0
 
 print(train_data.t, file=logs, flush=True)
-print(train_data.outlier_indexes, file=logs, flush=True)
+# print(train_data.outlier_indexes, file=logs, flush=True)  Won't actually print
 
 t = trans()
 est_T = t.detach().cpu().numpy()
@@ -223,6 +223,7 @@ for epoch in range(args.n_epoch):
         model.train()
 
     loss_list = []
+    outlier_index_list = []
 
     for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
         inputs, targets = inputs.cuda(), targets.cuda()
@@ -266,6 +267,11 @@ for epoch in range(args.n_epoch):
                                                                    train_acc / (len(train_data))), file=logs, flush=True)
     if epoch % 10 == 0:
         print(f"Batch indexes {indexes}", file=logs, flush=True)
+        for idx in indexes:
+            if idx in train_data.outlier_indexes:
+                outlier_index_list.append(idx)
+
+        print(f"Outlier indexes {outlier_index_list}", file=logs, flush=True)
         print(f"Epoch {epoch} training loss list {loss_list}", file=logs, flush=True)
 
     scheduler1.step()
