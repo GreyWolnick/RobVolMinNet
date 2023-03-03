@@ -276,8 +276,7 @@ for epoch in range(args.n_epoch):
         model.eval()
         trans.eval()
 
-        for batch_idx, (inputs, targets) in enumerate(val_loader):
-            indexes = [i for i in range(0, len(inputs))]
+        for batch_idx, (inputs, targets, indexes) in enumerate(val_loader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             clean = model(inputs)
@@ -302,8 +301,7 @@ for epoch in range(args.n_epoch):
         model.eval()
         trans.eval()
 
-        for batch_idx, (inputs, targets) in enumerate(test_loader):
-            indexes = [i for i in range(0, len(inputs))]
+        for batch_idx, (inputs, targets, indexes) in enumerate(test_loader):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             clean = model(inputs)
