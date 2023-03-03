@@ -224,7 +224,9 @@ for epoch in range(args.n_epoch):
 
     loss_list = []
 
-    for batch_idx, (inputs, targets) in enumerate(train_loader):
+    for batch_idx, tup in enumerate(train_loader):
+        print(len(tup))
+        # (inputs, targets)
         # print(indexes)
         exit()
         # indexes = [i for i in range(0, len(inputs))]
