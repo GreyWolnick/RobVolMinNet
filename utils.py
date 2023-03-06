@@ -157,8 +157,8 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
             sample_T = unflatten(outlier(img)).cpu().detach().numpy()  # Issue: only produces really low values
         sample_T = row_norm(sample_T)  # This sometimes produces rows that sum > 1
 
-        if idx % 1000 == 0:
-            print("Outlier T:", sample_T)
+        # if idx % 1000 == 0:  # Print some examples
+        #     print("Outlier T:", sample_T)
 
         flipped = flipper.multinomial(1, sample_T[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
