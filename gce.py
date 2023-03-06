@@ -147,8 +147,10 @@ test_loader = DataLoader(dataset=test_data,
                          drop_last=False)
 
 if args.loss_func == "gce":
+    print("gce selected")
     criterion = TruncatedLoss(args.q, args.k, trainset_size=len(train_data)).cuda()  # Truncated Loss
 else:
+    print("ce selected")
     criterion = F.nll_loss  # Negative Log Likelihood Loss
 
 # cuda
