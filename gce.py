@@ -208,6 +208,7 @@ for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
     if epoch % 10 == 0:
+        print(criterion.get_weight()[10:20])
         ax.plot(criterion.get_weight(), label=epoch)
 
     model.train()
