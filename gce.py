@@ -10,6 +10,8 @@ from transformer import transform_train, transform_test, transform_target
 from torch.optim.lr_scheduler import MultiStepLR
 from truncatedloss import TruncatedLoss
 
+import matplotlib.pyplot as plt
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, help='initial learning rate', default=0.01)
 parser.add_argument('--q', type=float, help='q parameter in gce', default=0.7)
@@ -44,6 +46,8 @@ torch.cuda.manual_seed(args.seed)
 
 # GPU
 device = torch.device('cuda:' + str(args.device))
+
+fig, ax = plt.subplots()  # Matplot
 
 if args.dataset == 'mnist':
     args.n_epoch = 60
@@ -147,10 +151,8 @@ test_loader = DataLoader(dataset=test_data,
                          drop_last=False)
 
 if args.loss_func == "gce":
-    print("gce selected")
     criterion = TruncatedLoss(args.q, args.k, trainset_size=len(train_data)).cuda()  # Truncated Loss
 else:
-    print("ce selected")
     criterion = F.nll_loss  # Negative Log Likelihood Loss
 
 # cuda
@@ -204,6 +206,12 @@ def checkpoint(acc, epoch, net):
 
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
+
+    ax.plot(criterion.get_weight())
+
+    # Save the plot as a PNG file
+    fig.savefig('myplot.png')
+    exit()
 
     model.train()
     trans.train()

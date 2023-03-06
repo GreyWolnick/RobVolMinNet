@@ -4,8 +4,6 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
-import matplotlib as plt
-
 
 class TruncatedLoss(nn.Module):
 
@@ -39,4 +37,7 @@ class TruncatedLoss(nn.Module):
 
         condition = torch.gt(Lqk, Lq)
         self.weight[indexes] = condition.type(torch.cuda.FloatTensor)
+
+    def get_weight(self):
+        return self.weight
 
