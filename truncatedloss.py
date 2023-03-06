@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
+import matplotlib as plt
+
 
 class TruncatedLoss(nn.Module):
 
@@ -14,6 +16,9 @@ class TruncatedLoss(nn.Module):
         self.weight = torch.nn.Parameter(data=torch.ones(trainset_size, 1), requires_grad=False)
 
     def forward(self, logits, targets, indexes):
+        plt.plot(self.weight)
+        plt.show()
+        exit()
         p = F.softmax(logits, dim=1)
         Yg = torch.gather(p, 1, torch.unsqueeze(targets, 1))
 
