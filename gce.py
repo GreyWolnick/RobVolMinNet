@@ -207,7 +207,8 @@ def checkpoint(acc, epoch, net):
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
-    ax.plot(criterion.get_weight())
+    if epoch % 10 == 0:
+        ax.plot(criterion.get_weight(), label=epoch)
 
     model.train()
     trans.train()
