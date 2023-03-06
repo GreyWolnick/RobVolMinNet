@@ -209,10 +209,6 @@ for epoch in range(args.n_epoch):
 
     ax.plot(criterion.get_weight())
 
-    # Save the plot as a PNG file
-    fig.savefig('myplot.png')
-    exit()
-
     model.train()
     trans.train()
 
@@ -400,3 +396,5 @@ print("Training Accuracy:", train_acc_list, file=logs, flush=True)
 print("Testing Loss:", test_loss_list, file=logs, flush=True)
 print("Testing Accuracy:", test_acc_list, file=logs, flush=True)
 logs.close()
+
+fig.savefig('myplot.png')
