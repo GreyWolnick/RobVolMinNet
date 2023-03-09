@@ -42,5 +42,5 @@ class TruncatedLoss(nn.Module):
         self.weight[indexes] = condition.type(torch.cuda.FloatTensor)
 
     def get_weight(self):
-        return self.weight.cpu()
+        return np.array(self.weight.cpu())
 

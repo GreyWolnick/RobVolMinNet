@@ -205,10 +205,13 @@ def checkpoint(acc, epoch, net):
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
-    if epoch % 10 == 0:
-        fig, ax = plt.subplots()  # Matplot
-        ax.plot(criterion.get_weight(), label=epoch)
-        fig.savefig(str(epoch)+'.png')
+    if (epoch + 1) % 10 == 0:
+        count = np.sum(criterion.get_weight()[train_data.outlier_indexes] == 1)
+        percentage = (count / len(train_data.outlier_indexes)) * 100
+        print(percentage)
+        # fig, ax = plt.subplots()  # Matplot
+        # ax.plot(criterion.get_weight(), label=epoch)
+        # fig.savefig(str(epoch)+'.png')
 
     model.train()
     trans.train()
