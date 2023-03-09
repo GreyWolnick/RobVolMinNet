@@ -26,19 +26,19 @@ class TruncatedLoss(nn.Module):
     def update_weight(self, logits, targets, indexes):
         p = F.softmax(logits, dim=1)
         Yg = torch.gather(p, 1, torch.unsqueeze(targets, 1))
-        print("Yg:", Yg)
+        # print("Yg:", Yg)
         Lq = ((1 - (Yg ** self.q)) / self.q)
         Lqk = np.repeat(((1 - (self.k ** self.q)) / self.q), targets.size(0))
         Lqk = torch.from_numpy(Lqk).type(torch.cuda.FloatTensor)
         Lqk = torch.unsqueeze(Lqk, 1)
 
-        print("LQ:", Lq)
-        print("LQK:", Lqk)
+        # print("LQ:", Lq)
+        # print("LQK:", Lqk)
 
         condition = torch.gt(Lqk, Lq)
-        print("Condition:", condition)
-        print("type:", condition.type(torch.cuda.FloatTensor))
-        exit()
+        # print("Condition:", condition)
+        # print("type:", condition.type(torch.cuda.FloatTensor))
+        # exit()
         self.weight[indexes] = condition.type(torch.cuda.FloatTensor)
 
     def get_weight(self):
