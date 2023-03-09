@@ -11,6 +11,7 @@ class TruncatedLoss(nn.Module):
         super(TruncatedLoss, self).__init__()
         self.q = q
         self.k = k
+        print(trainset_size)
         self.weight = torch.nn.Parameter(data=torch.ones(trainset_size, 1), requires_grad=False)
 
     def forward(self, logits, targets, indexes):
