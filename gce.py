@@ -206,6 +206,7 @@ for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
     if (epoch + 1) % 10 == 0:
+        print(len(criterion.get_weight()), len(train_data.outlier_indexes))
         count = np.sum(criterion.get_weight()[train_data.outlier_indexes] == 1)
         percentage = (count / len(train_data.outlier_indexes)) * 100
         print(percentage)
