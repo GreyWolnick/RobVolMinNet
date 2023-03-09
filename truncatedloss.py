@@ -34,6 +34,8 @@ class TruncatedLoss(nn.Module):
 
         print(Lq, "LQK:", Lqk)
 
+        exit()
+
         condition = torch.gt(Lqk, Lq)
         self.weight[indexes] = condition.type(torch.cuda.FloatTensor)
 
