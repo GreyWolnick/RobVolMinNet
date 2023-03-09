@@ -47,8 +47,6 @@ torch.cuda.manual_seed(args.seed)
 # GPU
 device = torch.device('cuda:' + str(args.device))
 
-fig, ax = plt.subplots()  # Matplot
-
 if args.dataset == 'mnist':
     args.n_epoch = 60
     num_classes = 10
@@ -208,7 +206,9 @@ for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
     if epoch % 10 == 0:
+        fig, ax = plt.subplots()  # Matplot
         ax.plot(criterion.get_weight(), label=epoch)
+        fig.savefig(str(epoch)+'.png')
 
     model.train()
     trans.train()
@@ -397,5 +397,3 @@ print("Training Accuracy:", train_acc_list, file=logs, flush=True)
 print("Testing Loss:", test_loss_list, file=logs, flush=True)
 print("Testing Accuracy:", test_acc_list, file=logs, flush=True)
 logs.close()
-
-fig.savefig('myplot.png')
