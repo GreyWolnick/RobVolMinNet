@@ -149,7 +149,6 @@ test_loader = DataLoader(dataset=test_data,
                          drop_last=False)
 
 if args.loss_func == "gce":
-    print(len(train_data))
     criterion = TruncatedLoss(args.q, args.k, trainset_size=len(train_data)).cuda()  # Truncated Loss
 else:
     criterion = F.nll_loss  # Negative Log Likelihood Loss
@@ -207,9 +206,9 @@ for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
     if (epoch + 1) % 10 == 0:
-        print(len(criterion.get_weight()), len(train_data.outlier_indexes))
-        count = np.sum(criterion.get_weight()[train_data.outlier_indexes] == 1)
-        percentage = (count / len(train_data.outlier_indexes)) * 100
+        eligible_indexes = train_data.outlier_indexes[train_data.outlier_indexes < 45000]
+        count = np.sum(criterion.get_weight()[eligible_indexes] == 1)
+        percentage = (count / len(eligible_indexes)) * 100
         print(percentage)
         # fig, ax = plt.subplots()  # Matplot
         # ax.plot(criterion.get_weight(), label=epoch)
