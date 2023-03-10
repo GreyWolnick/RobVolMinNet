@@ -208,9 +208,12 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
         assert actual_noise > 0.0
         print("ACTUAL NOISE RATE:", actual_noise)
 
+        outliers = np.ones(50000)
+        outliers[sample_idx] = 0
+
         y_train = y_train_noisy
 
-    return y_train, actual_noise, P, sample_idx
+    return y_train, actual_noise, P, outliers
 
 
 def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, random_state=1):
