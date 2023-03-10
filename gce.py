@@ -207,7 +207,7 @@ for epoch in range(args.n_epoch):
 
     if (epoch + 1) % 10 == 0:
         eligible_indexes = train_data.outlier_indexes[train_data.outlier_indexes < 45000]
-        count = np.sum(criterion.get_weight()[eligible_indexes] == 1)
+        count = np.sum(criterion.get_weight()[eligible_indexes] == 0)
         percentage = (count / len(eligible_indexes)) * 100
         print(percentage)
         # fig, ax = plt.subplots()  # Matplot
