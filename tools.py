@@ -87,6 +87,9 @@ def dataset_split(train_images, train_labels, transform, input_size, noise_rate=
     train_set, val_set = train_images[train_set_index, :], train_images[val_set_index, :]
     train_labels, val_labels = noisy_labels[train_set_index], noisy_labels[val_set_index]
 
-    train_outliers, val_outliers = outliers[train_set_index, :], outliers[val_set_index, :]
+    train_outliers = outliers[train_set_index, :]
+    val_outliers = []
+
+    # train_outliers, val_outliers = outliers[train_set_index, :], outliers[val_set_index, :]
 
     return train_set, val_set, train_labels, val_labels, transition_matrix, train_outliers, val_outliers
