@@ -173,8 +173,8 @@ t_vol_list = []
 best_acc = 0
 
 print(train_data.t, file=logs, flush=True)
-with np.printoptions(threshold=np.inf):
-    print(train_data.outlier_indexes, file=logs, flush=True)
+# with np.printoptions(threshold=np.inf):
+#     print(train_data.outlier_indexes, file=logs, flush=True)
 
 
 t = trans()
