@@ -3,6 +3,7 @@ import subprocess
 dataset = 'cifar10'
 indep_noise_rate = 0.2
 dep_noise_rate = 0.4
+k = 0.2
 
 for q in range(5, 10):
     q = q / 10.0
