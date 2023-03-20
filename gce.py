@@ -170,6 +170,8 @@ test_loss_list = []
 t_est_error_list = []
 t_vol_list = []
 
+outlier_detection_rate_list = []
+
 best_acc = 0
 
 print(train_data.t, file=logs, flush=True)
@@ -207,7 +209,7 @@ for epoch in range(args.n_epoch):
 
     if (epoch + 1) % 10 == 0:
         outlier_detection_rate = (train_data.train_outliers != criterion.get_weight()).mean()
-        print(outlier_detection_rate)
+        outlier_detection_rate_list.append(outlier_detection_rate)
         # eligible_indexes = train_data.outlier_indexes[train_data.outlier_indexes < 45000]
         # count = np.sum(criterion.get_weight()[eligible_indexes] == 0)
         # percentage = (count / len(eligible_indexes)) * 100
@@ -282,14 +284,14 @@ for epoch in range(args.n_epoch):
                                                                    train_vol_loss / (
                                                                     len(train_data)) * args.batch_size,
                                                                    train_acc / (len(train_data))), file=logs, flush=True)
-    if args.store_loss and epoch % 10 == 0:
-        print(f"Batch indexes {indexes}", file=logs, flush=True)
-        for idx in indexes:
-            if idx in train_data.outlier_indexes:
-                outlier_index_list.append(idx)
-
-        print(f"Outlier indexes {outlier_index_list}", file=logs, flush=True)
-        print(f"Epoch {epoch} training loss list {loss_list}", file=logs, flush=True)
+    # if args.store_loss and epoch % 10 == 0:
+    #     print(f"Batch indexes {indexes}", file=logs, flush=True)
+    #     for idx in indexes:
+    #         if idx in train_data.outlier_indexes:
+    #             outlier_index_list.append(idx)
+    #
+    #     print(f"Outlier indexes {outlier_index_list}", file=logs, flush=True)
+    #     print(f"Epoch {epoch} training loss list {loss_list}", file=logs, flush=True)
 
     scheduler1.step()
     scheduler2.step()
@@ -402,4 +404,5 @@ print("Training Loss:", train_loss_list, file=logs, flush=True)
 print("Training Accuracy:", train_acc_list, file=logs, flush=True)
 print("Testing Loss:", test_loss_list, file=logs, flush=True)
 print("Testing Accuracy:", test_acc_list, file=logs, flush=True)
+print("Outlier Detection:", outlier_detection_rate_list, file=logs, flush=True)
 logs.close()
