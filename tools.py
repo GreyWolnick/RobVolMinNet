@@ -30,7 +30,7 @@ def get_estimation_error(T, T_true):
 
         print(T_i)
         print(T_true_i)
-        row_ind, col_ind = linear_sum_assignment(-np.dot(np.transpose(T_i), T_true_i))
+        row_ind, col_ind = linear_sum_assignment(-np.dot(T_i, T_true_i))
         T[i] = T[i, :, col_ind]
         error += np.sum(np.abs(T[i]-T_true[i]))/np.sum(np.abs(T_true[i]))
     error = error / M
