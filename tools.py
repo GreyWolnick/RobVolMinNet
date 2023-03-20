@@ -10,9 +10,6 @@ def norm(T):
 
 
 def error(T, T_true):
-    print("T:", T)
-    print("!!!!!!!!!!!!")
-    print("Ttrue:", T_true)
     error = np.sum(np.abs(T-T_true)) / np.sum(np.abs(T_true))
     return error
 
@@ -20,6 +17,10 @@ def error(T, T_true):
 def get_estimation_error(T, T_true):
     # error = np.sum(np.abs(T - T_true)) / np.sum(np.abs(T_true))
     # return error
+
+    print("T:", T)
+    print("!!!!!!!!!!!!")
+    print("Ttrue:", T_true)
 
     M = np.shape(T)[0]
     error = 0
