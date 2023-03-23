@@ -23,6 +23,3 @@ for lam in [0.0001, 0.001, 0.00001]:
     cmd = f'python3 gce.py --dataset {dataset} --indep_noise_rate {indep_noise_rate} --dep_noise_rate {dep_noise_rate} --q {q} --k {k} --lam {lam}'
     subprocess.run(cmd.split())
 
-
-
-
