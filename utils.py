@@ -201,7 +201,7 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
         assert actual_noise > 0.0
         print("ACTUAL NOISE RATE:", actual_noise)
 
-        outliers = np.ones(50000)
+        outliers = np.ones(x_train.shape[0])
         outliers[sample_idx] = 0
 
         y_train = y_train_noisy
