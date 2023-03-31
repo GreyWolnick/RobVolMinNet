@@ -207,7 +207,7 @@ def checkpoint(acc, epoch, net):
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
 
-    if (epoch + 1) % 10 == 0:
+    if args.loss_func == "gce" and (epoch + 1) % 10 == 0:
         outlier_detection_rate = (train_data.train_outliers != criterion.get_weight()).mean()
         outlier_detection_rate_list.append(outlier_detection_rate)
         # eligible_indexes = train_data.outlier_indexes[train_data.outlier_indexes < 45000]

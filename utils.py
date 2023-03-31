@@ -194,15 +194,6 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
         for idx, outlier_idx in enumerate(sample_idx):
             y_train_noisy[outlier_idx] = y_train_outlier[idx]
 
-        # print("OUTLIER INDEXES:", sample_idx[:10])
-        # print("ORIGINALS")
-        # for i in range(10):
-        #     print(y_train[sample_idx[i]])
-        #
-        # print("New")
-        # for i in range(10):
-        #     print(y_train_noisy[sample_idx[i]])
-
 
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0
