@@ -182,6 +182,8 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
             P[i, i] = 1. - n
         P[nb_classes - 1, nb_classes - 1] = 1. - n
 
+        print(x_train.shape)
+
         sample_idx = np.random.choice(x_train.shape[0], round(x_train.shape[0]*outlier_noise), replace=False)
         # how do I want to split these labels so outliers are not used in multiclass_noisify
         if input_size != 784:
