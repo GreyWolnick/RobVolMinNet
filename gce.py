@@ -254,7 +254,8 @@ for epoch in range(args.n_epoch):
 
         t = trans()
 
-        out = torch.mm(clean, t)
+        # out = torch.mm(clean, t)
+        out = clean
 
         vol_loss = t.slogdet().logabsdet
 
@@ -263,7 +264,8 @@ for epoch in range(args.n_epoch):
         else:
             ce_loss = criterion(out.log(), targets.long())
 
-        loss = ce_loss + args.lam * vol_loss
+        # loss = ce_loss + args.lam * vol_loss
+        loss = ce_loss
 
         if args.store_loss and epoch % 10 == 0:
             loss_list.append(loss.item())
