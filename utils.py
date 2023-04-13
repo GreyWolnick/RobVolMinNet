@@ -139,7 +139,7 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
         adds gross outliers to training labels
     """
 
-    print("Adding outliers")
+    print(f"X Shape {x.shape}")
 
     outlier = Outlier(input_size, 200, nb_classes)  # make these non-static
     unflatten = torch.nn.Unflatten(0, (nb_classes, nb_classes))
@@ -147,7 +147,10 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
 
     new_y = y.copy()
 
+    print("Starting loop")
+
     for idx in np.arange(x.shape[0]):
+        print(idx)
         i = y[idx]
 
         if input_size == 784:
