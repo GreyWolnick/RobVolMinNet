@@ -139,6 +139,8 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
         adds gross outliers to training labels
     """
 
+    print("Adding outliers")
+
     outlier = Outlier(input_size, 200, nb_classes)  # make these non-static
     unflatten = torch.nn.Unflatten(0, (nb_classes, nb_classes))
     flipper = np.random.RandomState(random_state)
@@ -191,6 +193,7 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
             x_train = x_train.transpose((0, 2, 3, 1))
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], input_size, transform=transform,
                                                      nb_classes=nb_classes, random_state=random_state)
+        print("Done outliers")
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
 
         for idx, outlier_idx in enumerate(sample_idx):
