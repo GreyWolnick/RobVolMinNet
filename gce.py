@@ -210,8 +210,10 @@ def minimum_volume_regularization(T):
     return T.slogdet().logabsdet
 
 
+print("Beginning Training")
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
+    print(f'epoch {epoch}')
 
     if args.loss_func == "gce" and (epoch + 1) % 10 == 0:
         outlier_detection_rate = (train_data.train_outliers != criterion.get_weight()).mean()
