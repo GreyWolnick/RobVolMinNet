@@ -139,7 +139,7 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
         adds gross outliers to training labels
     """
 
-    print(f"X Shape {x.shape}")
+    # print(f"X Shape {x.shape}")
 
     outlier = Outlier(input_size, 200, nb_classes)  # make these non-static
     unflatten = torch.nn.Unflatten(0, (nb_classes, nb_classes))
@@ -147,12 +147,8 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
 
     new_y = y.copy()
 
-    print("Starting loop")
-
     for idx in np.arange(x.shape[0]):
-        if idx % 100 == 0:
-            print(idx)
-            
+
         i = y[idx]
 
         if input_size == 784:
@@ -198,13 +194,10 @@ def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_no
             x_train = x_train.transpose((0, 2, 3, 1))
         y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], input_size, transform=transform,
                                                      nb_classes=nb_classes, random_state=random_state)
-        print("Done outliers")
         y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
 
         for idx, outlier_idx in enumerate(sample_idx):
             y_train_noisy[outlier_idx] = y_train_outlier[idx]
-
-        print("DONE NOISIFYING")
 
         actual_noise = (y_train_noisy != y_train).mean()
         assert actual_noise > 0.0

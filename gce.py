@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type=float, help='initial learning rate', default=0.01)
-parser.add_argument('--q', type=float, help='q parameter in gce', default=0.7)
-parser.add_argument('--k', type=float, help='k parameter in gce', default=0.5)
+parser.add_argument('--q', type=float, help='q parameter in gce', default=0.5)
+parser.add_argument('--k', type=float, help='k parameter in gce', default=0.4)
 parser.add_argument('--save_dir', type=str, help='dir to save model files', default='saves')
 parser.add_argument('--dataset', type=str, help='mnist, cifar10, or cifar100', default='mnist')
 parser.add_argument('--n_epoch', type=int, default=200)
@@ -31,7 +31,7 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--device', type=int, default=0)
 parser.add_argument('--weight_decay', type=float, help='weight_decay for training', default=1e-4)
-parser.add_argument('--lam', type=float, default=0.0001)
+parser.add_argument('--lam', type=float, default=0.00001)
 parser.add_argument('--anchor', action='store_false')
 
 parser.add_argument('--sess', default='default', type=str, help='session id')
@@ -210,7 +210,6 @@ def minimum_volume_regularization(T):
     return T.slogdet().logabsdet
 
 
-print("Beginning Training")
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
     print(f'epoch {epoch}')
