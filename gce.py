@@ -21,6 +21,7 @@ parser.add_argument('--dataset', type=str, help='mnist, cifar10, or cifar100', d
 parser.add_argument('--n_epoch', type=int, default=200)
 parser.add_argument('--num_classes', type=int, default=10)
 parser.add_argument('--loss_func', type=str, default='gce')
+parser.add_argument('--reg_type', type=str, default='min')
 parser.add_argument('--vol_min', type=bool, default=True)
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
@@ -32,7 +33,6 @@ parser.add_argument('--device', type=int, default=0)
 parser.add_argument('--weight_decay', type=float, help='weight_decay for training', default=1e-4)
 parser.add_argument('--lam', type=float, default=0.0001)
 parser.add_argument('--anchor', action='store_false')
-parser.add_argument('--store_loss', type=int, help='bool to store sample loss values every 10 epochs, should be 0 or 1', default=0)
 
 parser.add_argument('--sess', default='default', type=str, help='session id')
 parser.add_argument('--start_prune', default=40, type=int, help='number of total epochs to run')
@@ -175,8 +175,6 @@ outlier_detection_rate_list = []
 best_acc = 0
 
 print(train_data.t, file=logs, flush=True)
-# with np.printoptions(threshold=np.inf):
-#     print(train_data.outlier_indexes, file=logs, flush=True)
 
 
 t = trans()
@@ -203,6 +201,14 @@ def checkpoint(acc, epoch, net):
     torch.save(state, './checkpoint/ckpt.t7.' +
                args.sess)
 
+def maximum_volume_regularization(H):
+    HH = torch.mm(H.t(),H)
+    regularizer_loss = -torch.log(torch.linalg.det(HH))
+    return regularizer_loss
+
+def minimum_volume_regularization(T):
+    return T.slogdet().logabsdet
+
 
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
@@ -210,13 +216,6 @@ for epoch in range(args.n_epoch):
     if args.loss_func == "gce" and (epoch + 1) % 10 == 0:
         outlier_detection_rate = (train_data.train_outliers != criterion.get_weight()).mean()
         outlier_detection_rate_list.append(outlier_detection_rate)
-        # eligible_indexes = train_data.outlier_indexes[train_data.outlier_indexes < 45000]
-        # count = np.sum(criterion.get_weight()[eligible_indexes] == 0)
-        # percentage = (count / len(eligible_indexes)) * 100
-        # print(percentage)
-        # fig, ax = plt.subplots()  # Matplot
-        # ax.plot(criterion.get_weight(), label=epoch)
-        # fig.savefig(str(epoch)+'.png')
 
     model.train()
     trans.train()
@@ -241,9 +240,6 @@ for epoch in range(args.n_epoch):
         model = now['current_net']
         model.train()
 
-    loss_list = []
-    outlier_index_list = []
-
     for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
         inputs, targets = inputs.cuda(), targets.cuda()
 
@@ -254,24 +250,25 @@ for epoch in range(args.n_epoch):
 
         t = trans()
 
-        # out = torch.mm(clean, t)
-        out = clean
+        out = torch.mm(clean, t)
 
-        vol_loss = t.slogdet().logabsdet
+        # vol_loss = t.slogdet().logabsdet
+        if args.reg_type == "max":
+            print(clean.shape)
+            exit(0)
+            regularizer_loss = maximum_volume_regularization(clean)
+        else:
+            regularizer_loss = minimum_volume_regularization(t)
 
         if args.loss_func == "gce":
             ce_loss = criterion(out.log(), targets, indexes)
         else:
             ce_loss = criterion(out.log(), targets.long())
 
-        # loss = ce_loss + args.lam * vol_loss
-        loss = ce_loss
-
-        if args.store_loss and epoch % 10 == 0:
-            loss_list.append(loss.item())
+        loss = ce_loss + args.lam * regularizer_loss
 
         train_loss += loss.item()
-        train_vol_loss += vol_loss.item()
+        train_vol_loss += regularizer_loss.item()
 
         pred = torch.max(out, 1)[1]
         train_correct = (pred == targets).sum()
@@ -286,14 +283,6 @@ for epoch in range(args.n_epoch):
                                                                    train_vol_loss / (
                                                                     len(train_data)) * args.batch_size,
                                                                    train_acc / (len(train_data))), file=logs, flush=True)
-    # if args.store_loss and epoch % 10 == 0:
-    #     print(f"Batch indexes {indexes}", file=logs, flush=True)
-    #     for idx in indexes:
-    #         if idx in train_data.outlier_indexes:
-    #             outlier_index_list.append(idx)
-    #
-    #     print(f"Outlier indexes {outlier_index_list}", file=logs, flush=True)
-    #     print(f"Epoch {epoch} training loss list {loss_list}", file=logs, flush=True)
 
     scheduler1.step()
     scheduler2.step()
