@@ -26,7 +26,7 @@ parser.add_argument('--vol_min', type=bool, default=True)
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--indep_noise_rate', type=float, help='instance independent corruption rate, should be less than 1', default=0.2)
-parser.add_argument('--dep_noise_rate', type=float, help='instance dependent corruption rate, should be less than 1', default=0.05)
+parser.add_argument('--dep_noise_rate', type=float, help='instance dependent corruption rate, should be less than 1', default=0.4)
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--device', type=int, default=0)
@@ -255,8 +255,6 @@ for epoch in range(args.n_epoch):
 
         # vol_loss = t.slogdet().logabsdet
         if args.reg_type == "max":
-            print(clean.shape)
-            exit(0)
             regularizer_loss = maximum_volume_regularization(clean)
         else:
             regularizer_loss = minimum_volume_regularization(t)
