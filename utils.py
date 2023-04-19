@@ -149,9 +149,6 @@ def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, rando
 
     for idx in np.arange(x.shape[0]):
 
-        if idx % 100 == 0:
-            print(idx)
-
         i = y[idx]
 
         if input_size == 784:

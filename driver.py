@@ -1,21 +1,20 @@
 import subprocess
 
-datasets = ['mnist', 'cifar10', 'fashionmnist']
-indep_noise_rate = 0.2
-dep_noise_rate = 0.4
-k = 0.4
-q = 0.5
-lam = 0.00001
+# datasets = ['mnist', 'cifar10', 'fashionmnist']
+qs = [0.3,0.4,0.5,0.6]
+ks = [0.3,0.4,0.5,0.6]
+lams = [0.000001, 0.00001, 0.0001]
 
-print("THIS IS A TEST")
+for q in qs:
+    cmd = f'python3 gce.py --dataset cifar10 --q {q} --k 0.4 --lam 0.00001'
+    subprocess.run(cmd.split())
 
-for i in range(10):
-    print(i)
+for k in ks:
+    cmd = f'python3 gce.py --dataset cifar10 --q 0.5 --k {k} --lam 0.00001'
+    subprocess.run(cmd.split())
 
-# for dataset in datasets:
-#     cmd = f'python3 gce.py --dataset {dataset} --indep_noise_rate {indep_noise_rate} --dep_noise_rate {dep_noise_rate} --q {q} --k {k} --lam {lam}'
-#     subprocess.run(cmd.split())
-#     cmd = f'python3 gce.py --loss_func ce --dataset {dataset} --indep_noise_rate {indep_noise_rate} --dep_noise_rate {dep_noise_rate} --q {q} --k {k} --lam {lam}'
-#     subprocess.run(cmd.split())
+for lam in lams:
+    cmd = f'python3 gce.py --dataset cifar10 --q 0.5 --k 0.4 --lam {lam}'
+    subprocess.run(cmd.split())
 
 
