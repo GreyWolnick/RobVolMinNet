@@ -235,8 +235,12 @@ for epoch in range(args.n_epoch):
         model.eval()
         for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
             inputs, targets = inputs.cuda(), targets.cuda()
-            outputs = model(inputs)
-            criterion.update_weight(outputs, targets, indexes)
+            clean = model(inputs)
+            t = trans()
+            out = torch.mm(clean, t)
+            if not args.vol_min:  # Revert T correction if vol_min is False
+                out = clean
+            criterion.update_weight(out, targets, indexes)
         now = torch.load('./checkpoint/current_net')
         model = now['current_net']
         model.train()
@@ -252,6 +256,9 @@ for epoch in range(args.n_epoch):
         t = trans()
 
         out = torch.mm(clean, t)
+
+        if not args.vol_min:  # Revert T correction if vol_min is False
+            out = clean
 
         # vol_loss = t.slogdet().logabsdet
         if args.reg_type == "max":
@@ -294,9 +301,12 @@ for epoch in range(args.n_epoch):
             inputs, targets = inputs.cuda(), targets.cuda()
 
             clean = model(inputs)
-            t = trans()
 
+            t = trans()
             out = torch.mm(clean, t)
+
+            if not args.vol_min:  # Revert T correction if vol_min is False
+                out = clean
 
             if args.loss_func == "gce":
                 loss = criterion(clean, targets, indexes)
