@@ -153,6 +153,9 @@ if args.loss_func == "gce":
 else:
     criterion = F.nll_loss  # Negative Log Likelihood Loss
 
+if not args.vol_min:  # Remove any volume regularization
+    args.lam = 0
+
 # cuda
 if torch.cuda.is_available:
     model = model.to(device)
