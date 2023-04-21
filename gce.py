@@ -23,7 +23,8 @@ parser.add_argument('--num_classes', type=int, default=10)
 parser.add_argument('--loss_func', type=str, default='gce')
 parser.add_argument('--reg_type', type=str, default='min')
 parser.add_argument('--vol_min', type=str, default='True')
-parser.add_argument('--noise_type', type=str, default='symmetric')
+# parser.add_argument('--vol_min', action='store_true') Possibly?
+parser.add_argument('--noise_type', type=str, default='symmetric')  # Get rid of this
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--indep_noise_rate', type=float, help='instance independent corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--dep_noise_rate', type=float, help='instance dependent corruption rate, should be less than 1', default=0.4)
@@ -32,7 +33,7 @@ parser.add_argument('--batch_size', type=int, default=128)
 parser.add_argument('--device', type=int, default=0)
 parser.add_argument('--weight_decay', type=float, help='weight_decay for training', default=1e-4)
 parser.add_argument('--lam', type=float, default=0.00001)
-parser.add_argument('--anchor', action='store_false')
+parser.add_argument('--anchor', action='store_false')  # Seems unnecessary
 
 parser.add_argument('--sess', default='default', type=str, help='session id')
 parser.add_argument('--start_prune', default=40, type=int, help='number of total epochs to run')
@@ -46,6 +47,9 @@ torch.cuda.manual_seed(args.seed)
 
 # GPU
 device = torch.device('cuda:' + str(args.device))
+
+if args.vol_min != 'True':  # Remove any volume regularization
+    args.lam = 0
 
 if args.dataset == 'mnist':
     args.n_epoch = 60
@@ -152,9 +156,6 @@ if args.loss_func == "gce":
     criterion = TruncatedLoss(args.q, args.k, trainset_size=len(train_data)).cuda()  # Truncated Loss
 else:
     criterion = F.nll_loss  # Negative Log Likelihood Loss
-
-if args.vol_min != 'True':  # Remove any volume regularization
-    args.lam = 0
 
 # cuda
 if torch.cuda.is_available:
