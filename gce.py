@@ -153,8 +153,11 @@ if args.loss_func == "gce":
 else:
     criterion = F.nll_loss  # Negative Log Likelihood Loss
 
+print(args.vol_min)
 if not args.vol_min:  # Remove any volume regularization
     args.lam = 0
+
+print(args.lam)
 
 # cuda
 if torch.cuda.is_available:
@@ -274,7 +277,9 @@ for epoch in range(args.n_epoch):
         else:
             ce_loss = criterion(out.log(), targets.long())
 
+        print(args.lam)
         loss = ce_loss + args.lam * regularizer_loss
+        exit(0)
 
         train_loss += loss.item()
         train_vol_loss += regularizer_loss.item()
