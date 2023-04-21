@@ -22,7 +22,7 @@ parser.add_argument('--n_epoch', type=int, default=200)
 parser.add_argument('--num_classes', type=int, default=10)
 parser.add_argument('--loss_func', type=str, default='gce')
 parser.add_argument('--reg_type', type=str, default='min')
-parser.add_argument('--vol_min', type=bool, default=True)
+parser.add_argument('--vol_min', type=str, default='True')
 parser.add_argument('--noise_type', type=str, default='symmetric')
 parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--indep_noise_rate', type=float, help='instance independent corruption rate, should be less than 1', default=0.2)
@@ -154,7 +154,7 @@ else:
     criterion = F.nll_loss  # Negative Log Likelihood Loss
 
 print(args.vol_min)
-if not args.vol_min:  # Remove any volume regularization
+if args.vol_min != 'True':  # Remove any volume regularization
     args.lam = 0
 
 print(args.lam)
@@ -244,7 +244,7 @@ for epoch in range(args.n_epoch):
             clean = model(inputs)
             t = trans()
             out = torch.mm(clean, t)
-            if not args.vol_min:  # Revert T correction if vol_min is False
+            if args.vol_min != 'True':  # Revert T correction if vol_min is False
                 out = clean
             criterion.update_weight(out, targets, indexes)
         now = torch.load('./checkpoint/current_net')
@@ -263,7 +263,7 @@ for epoch in range(args.n_epoch):
 
         out = torch.mm(clean, t)
 
-        if not args.vol_min:  # Revert T correction if vol_min is False
+        if args.vol_min != 'True': # Revert T correction if vol_min is False
             out = clean
 
         # vol_loss = t.slogdet().logabsdet
@@ -313,7 +313,7 @@ for epoch in range(args.n_epoch):
             t = trans()
             out = torch.mm(clean, t)
 
-            if not args.vol_min:  # Revert T correction if vol_min is False
+            if args.vol_min != 'True':  # Revert T correction if vol_min is False
                 out = clean
 
             if args.loss_func == "gce":
