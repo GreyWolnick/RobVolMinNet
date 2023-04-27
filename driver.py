@@ -1,9 +1,9 @@
 import subprocess
 
 # datasets = ['mnist', 'cifar10', 'fashionmnist']
-qs = [0.3,0.4,0.5,0.6]
-ks = [0.3,0.4,0.5,0.6]
-lams = [0.000001, 0.00001, 0.0001]
+qs = [0.1, 0.9]
+ks = [0.1, 0.9]
+lams = [0.1, 0.01]
 
 for q in qs:
     cmd = f'python3 gce.py --reg_type max --dataset cifar10 --q {q} --k 0.4 --lam 0.00001'

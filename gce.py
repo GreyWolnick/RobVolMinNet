@@ -206,7 +206,7 @@ def checkpoint(acc, epoch, net):
                args.sess)
 
 def maximum_volume_regularization(H):
-    HH = torch.mm(H.t(),H)
+    HH = torch.mm(H.t(), H)
     regularizer_loss = -torch.log(torch.linalg.det(HH))
     return regularizer_loss
 
