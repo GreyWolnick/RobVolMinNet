@@ -47,7 +47,9 @@ def instance_dependent_noisify(y, nb_classes):
     for idx in np.arange(y.shape[0]):
 
         flipper = np.random.RandomState(idx)  # Get a new seed for each sample
-        flipped = flipper.multinomial(n=1, pvals=vector_norm(flipper.rand(1, nb_classes)[0]), size=1)
+        v = vector_norm(flipper.rand(1, nb_classes)[0])
+        print(v)
+        flipped = flipper.multinomial(n=1, pvals=v, size=1)
         new_y[idx] = np.where(flipped == 1)[0]
 
     return new_y
