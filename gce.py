@@ -271,11 +271,8 @@ for epoch in range(args.n_epoch):
             regularizer_loss = minimum_volume_regularization(t)
 
         if args.loss_func == "gce":
-            print(out)
-            print("_______________________")
-            print(out.log())
-            exit(0)
-            ce_loss = criterion(out.log(), targets, indexes)
+            # out.log()
+            ce_loss = criterion(out, targets, indexes)
         else:
             ce_loss = criterion(out.log(), targets.long())
 
