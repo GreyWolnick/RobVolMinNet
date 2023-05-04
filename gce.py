@@ -177,6 +177,7 @@ t_vol_list = []
 outlier_detection_rate_list = []
 
 best_acc = 0
+best_val_acc = 0
 
 print(train_data.t, file=logs, flush=True)
 
@@ -191,7 +192,7 @@ estimate_error = tools.get_estimation_error(est_T, train_data.t)
 print('Estimation Error: {:.2f}'.format(estimate_error), file=logs, flush=True)
 
 
-def checkpoint(acc, epoch, net):
+def checkpoint(acc, epoch, net, type="gce"):
     # Save checkpoint.
     print('Saving..')
     state = {
@@ -202,8 +203,7 @@ def checkpoint(acc, epoch, net):
     }
     if not os.path.isdir('checkpoint'):
         os.mkdir('checkpoint')
-    torch.save(state, './checkpoint/ckpt.t7.' +
-               args.sess)
+    torch.save(state, './checkpoint/ckpt.t7.' + type)
 
 def maximum_volume_regularization(H):
     HH = torch.mm(H.t(), H)
@@ -323,6 +323,11 @@ for epoch in range(args.n_epoch):
             val_correct = (pred == targets).sum()
             val_acc += val_correct.item()
 
+        acc = val_acc / (len(val_data))
+        if acc > best_val_acc:
+            best_val_acc = acc
+            checkpoint(acc, epoch, model, "val")
+
     print('Val Loss: {:.6f}, Acc: {:.6f}'.format(val_loss / (len(val_data)) * args.batch_size,
                                                  val_acc / (len(val_data))), file=logs, flush=True)
 
@@ -379,6 +384,27 @@ for epoch in range(args.n_epoch):
     val_acc_list.append(val_acc / (len(val_data)))
     test_loss_list.append(test_loss / (len(test_data)) * args.batch_size)
     test_acc_list.append(test_acc / (len(test_data)))
+
+    checkpoint_dict = torch.load('./checkpoint/ckpt.t7.val')  # Get best val test accuracy
+    model = checkpoint_dict['net']
+    model.eval()
+    for batch_idx, (inputs, targets, indexes) in enumerate(test_loader):
+        inputs, targets = inputs.cuda(), targets.cuda()
+
+        clean = model(inputs)
+
+        if args.loss_func == "gce":
+            loss = criterion(clean, targets, indexes)
+        else:
+            loss = criterion(clean.log(), targets.long())
+
+        test_loss += loss.item()
+        pred = torch.max(clean, 1)[1]
+        eval_correct = (pred == targets).sum()
+        test_acc += eval_correct.item()
+
+    print('Best Model Test Loss: {:.6f}, Acc: {:.6f}'.format(test_loss / (len(test_data)) * args.batch_size,
+                                                  test_acc / (len(test_data))), file=logs, flush=True)
 
 val_loss_array = np.array(val_loss_list)
 val_acc_array = np.array(val_acc_list)
