@@ -15,6 +15,11 @@ def row_norm(T):
     return T_norm
 
 
+def vector_norm(v):
+    mean = np.mean(v)
+    return v - mean
+
+
 def instance_independent_noisify(y, P, random_state=1):
     """
     Flip classes according to transition probability matrix T.
@@ -42,10 +47,7 @@ def instance_dependent_noisify(y, nb_classes):
     for idx in np.arange(y.shape[0]):
 
         flipper = np.random.RandomState(idx)  # Get a new seed for each sample
-        p = flipper.rand(1, nb_classes)[0]
-        print(p)
-        norm_p = row_norm(p)
-        flipped = flipper.multinomial(n=1, pvals=norm_p, size=1)
+        flipped = flipper.multinomial(n=1, pvals=vector_norm(flipper.rand(1, nb_classes)[0]), size=1)
         new_y[idx] = np.where(flipped == 1)[0]
 
     return new_y
