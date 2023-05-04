@@ -15,6 +15,9 @@ def error(T, T_true):
 
 
 def get_estimation_error(T, T_true):
+    print(T)
+    print("___________________")
+    print(T_true)
     row_ind, col_ind = linear_sum_assignment(-np.dot(np.transpose(T), T_true))
     T = T[:, col_ind]
 
