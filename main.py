@@ -260,6 +260,8 @@ for epoch in range(args.n_epoch):
 
         clean = model(inputs)
 
+        print("CLEAN!!!!!:", clean)
+
         t = trans()
 
         print("*******************")
