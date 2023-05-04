@@ -283,9 +283,9 @@ for epoch in range(args.n_epoch):
         else:
             ce_loss = criterion(out.log(), targets.long())
 
-        loss = ce_loss + args.lam * regularizer_loss
+        print("LOSS:", ce_loss, regularizer_loss)
 
-        print(loss)
+        loss = ce_loss + args.lam * regularizer_loss
 
         train_loss += loss.item()
         train_vol_loss += regularizer_loss.item()
