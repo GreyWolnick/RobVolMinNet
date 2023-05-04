@@ -204,9 +204,9 @@ def checkpoint(acc, epoch, net, type="gce"):
     torch.save(state, './checkpoint/ckpt.t7.' + type)
 
 def maximum_volume_regularization(H):
-    print("SHAPE", H.shape, H.t().shape)
     HH = torch.mm(H.t(), H)
     regularizer_loss = -torch.log(torch.linalg.det(HH))
+    print("BEFORE:", regularizer_loss)
     return regularizer_loss
 
 def minimum_volume_regularization(T):
