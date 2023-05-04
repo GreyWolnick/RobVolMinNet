@@ -206,7 +206,6 @@ def checkpoint(acc, epoch, net, type="gce"):
 def maximum_volume_regularization(H):
     HH = torch.mm(H.t(), H)
     regularizer_loss = -torch.log(torch.linalg.det(HH))
-    print("BEFORE:", regularizer_loss)
     return regularizer_loss
 
 def minimum_volume_regularization(T):
@@ -261,13 +260,7 @@ for epoch in range(args.n_epoch):
 
         clean = model(inputs)
 
-        print("CLEAN!!!!!:", clean)
-
         t = trans()
-
-        print("*******************")
-        print(t)
-        print("*******************")
 
         out = torch.mm(clean, t)
 
@@ -280,13 +273,14 @@ for epoch in range(args.n_epoch):
         else:
             regularizer_loss = minimum_volume_regularization(t)
 
+        if np.isnan(regularizer_loss.item()) or np.isinf(regularizer_loss.item()) or regularizer_loss.item() > 100:
+            regularizer_loss = torch.tensor(0.0)  # Fix?
+
         if args.loss_func == "gce":
             # out.log()
             ce_loss = criterion(out, targets, indexes)
         else:
             ce_loss = criterion(out.log(), targets.long())
-
-        print("LOSS:", ce_loss, regularizer_loss)
 
         loss = ce_loss + args.lam * regularizer_loss
 
