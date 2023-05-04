@@ -14,7 +14,7 @@ class TruncatedLoss(nn.Module):
         self.weight = torch.nn.Parameter(data=torch.ones(trainset_size, 1), requires_grad=False)
 
     def forward(self, logits, targets, indexes):
-        p = F.softmax(logits, dim=1)
+        # p = F.softmax(logits, dim=1)
         Yg = torch.gather(p, 1, torch.unsqueeze(targets, 1))
 
         loss = ((1 - (Yg ** self.q)) / self.q) * self.weight[indexes] - ((1 - (self.k ** self.q)) / self.q) * \
@@ -24,7 +24,7 @@ class TruncatedLoss(nn.Module):
         return loss
 
     def update_weight(self, logits, targets, indexes):
-        p = F.softmax(logits, dim=1)
+        # p = F.softmax(logits, dim=1)
         Yg = torch.gather(p, 1, torch.unsqueeze(targets, 1))
         Lq = ((1 - (Yg ** self.q)) / self.q)
         Lqk = np.repeat(((1 - (self.k ** self.q)) / self.q), targets.size(0))
