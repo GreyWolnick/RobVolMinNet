@@ -65,12 +65,12 @@ def noisify(y_train, x_train, indep_noise, dep_noise, nb_classes=10):
     P[nb_classes - 1, nb_classes - 1] = 1. - indep_noise
 
     instance_dependent_index = int(y_train.shape[0]*dep_noise)
-    instance_independent_index = instance_dependent_index + int(y_train.shape[0]*indep_noise)
+    # instance_independent_index = instance_dependent_index + int(y_train.shape[0]*indep_noise)
 
     y_train_dependent = instance_dependent_noisify(y_train[:instance_dependent_index], nb_classes)
-    y_train_independent = instance_independent_noisify(y_train[instance_dependent_index:instance_independent_index], P)
+    y_train_independent = instance_independent_noisify(y_train[instance_dependent_index:], P)
 
-    y_train_noisy = np.concatenate((y_train_dependent, y_train_independent, y_train[instance_independent_index:]), axis=0)
+    y_train_noisy = np.concatenate((y_train_dependent, y_train_independent), axis=0)
 
     actual_noise = (y_train_noisy != y_train).mean()
     assert actual_noise > 0.0
