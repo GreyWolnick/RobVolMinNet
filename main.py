@@ -285,6 +285,8 @@ for epoch in range(args.n_epoch):
 
         loss = ce_loss + args.lam * regularizer_loss
 
+        print(loss)
+
         train_loss += loss.item()
         train_vol_loss += regularizer_loss.item()
 
