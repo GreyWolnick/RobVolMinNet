@@ -1,127 +1,6 @@
-import os, torch
+import os
 import os.path
-import copy, pdb
-import hashlib
-import errno
 import numpy as np
-from numpy.testing import assert_array_almost_equal
-
-from models import Outlier
-from PIL import Image
-
-
-def check_integrity(fpath, md5):
-    if not os.path.isfile(fpath):
-        return False
-    md5o = hashlib.md5()
-    with open(fpath, 'rb') as f:
-        # read in 1MB chunks
-        for chunk in iter(lambda: f.read(1024 * 1024), b''):
-            md5o.update(chunk)
-    md5c = md5o.hexdigest()
-    if md5c != md5:
-        return False
-    return True
-
-
-def download_url(url, root, filename, md5):
-    from six.moves import urllib
-
-    root = os.path.expanduser(root)
-    fpath = os.path.join(root, filename)
-
-    try:
-        os.makedirs(root)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            pass
-        else:
-            raise
-
-    # downloads file
-    if os.path.isfile(fpath) and check_integrity(fpath, md5):
-        print('Using downloaded and verified file: ' + fpath)
-    else:
-        try:
-            print('Downloading ' + url + ' to ' + fpath)
-            urllib.request.urlretrieve(url, fpath)
-        except:
-            if url[:5] == 'https':
-                url = url.replace('https:', 'http:')
-                print('Failed download. Trying https -> http instead.'
-                      ' Downloading ' + url + ' to ' + fpath)
-                urllib.request.urlretrieve(url, fpath)
-
-
-def list_dir(root, prefix=False):
-    """List all directories at a given root
-    Args:
-        root (str): Path to directory whose folders need to be listed
-        prefix (bool, optional): If true, prepends the path to each result, otherwise
-            only returns the name of the directories found
-    """
-    root = os.path.expanduser(root)
-    directories = list(
-        filter(
-            lambda p: os.path.isdir(os.path.join(root, p)),
-            os.listdir(root)
-        )
-    )
-
-    if prefix is True:
-        directories = [os.path.join(root, d) for d in directories]
-
-    return directories
-
-
-def list_files(root, suffix, prefix=False):
-    """List all files ending with a suffix at a given root
-    Args:
-        root (str): Path to directory whose folders need to be listed
-        suffix (str or tuple): Suffix of the files to match, e.g. '.png' or ('.jpg', '.png').
-            It uses the Python "str.endswith" method and is passed directly
-        prefix (bool, optional): If true, prepends the path to each result, otherwise
-            only returns the name of the files found
-    """
-    root = os.path.expanduser(root)
-    files = list(
-        filter(
-            lambda p: os.path.isfile(os.path.join(root, p)) and p.endswith(suffix),
-            os.listdir(root)
-        )
-    )
-
-    if prefix is True:
-        files = [os.path.join(root, d) for d in files]
-
-    return files
-
-
-# basic function
-def multiclass_noisify(y, P, random_state=1):
-    """ Flip classes according to transition probability matrix T.
-    It expects a number between 0 and the number of classes - 1.
-    """
-    #    print (np.max(y), P.shape[0])
-    assert P.shape[0] == P.shape[1]
-    assert np.max(y) < P.shape[0]
-
-    # row stochastic matrix
-    assert_array_almost_equal(P.sum(axis=1), np.ones(P.shape[1]))
-    assert (P >= 0.0).all()
-
-    m = y.shape[0]
-    new_y = y.copy()
-    flipper = np.random.RandomState(random_state)
-
-    for idx in np.arange(m):
-        i = y[idx]
-        # draw a vector with only an 1
-
-        flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
-        new_y[idx] = np.where(flipped == 1)[0]
-
-    return new_y
 
 
 def col_norm(T):
@@ -129,95 +8,69 @@ def col_norm(T):
     T_norm = T / column_sums
     return T_norm
 
+
 def row_norm(T):
     row_sums = np.sum(T, axis=1)
     T_norm = T / row_sums.reshape((-1, 1))
     return T_norm
 
-def multiclass_outlier_noisify(x, y, input_size, transform, nb_classes=10, random_state=1):
-    """
-        adds gross outliers to training labels
-    """
 
-    # print(f"X Shape {x.shape}")
-
-    outlier = Outlier(input_size, 200, nb_classes)  # make these non-static
-    unflatten = torch.nn.Unflatten(0, (nb_classes, nb_classes))
-    flipper = np.random.RandomState(random_state)
+def instance_independent_noisify(y, P, random_state=1):
+    """
+    Flip classes according to transition probability matrix T.
+    random_state should be between 0 and the number of classes - 1.
+    """
 
     new_y = y.copy()
+    flipper = np.random.RandomState(random_state)
 
-    for idx in np.arange(x.shape[0]):
-
+    for idx in np.arange(y.shape[0]):
         i = y[idx]
-
-        if input_size == 784:
-            sample_T = unflatten(outlier(torch.flatten(transform(x[idx])))).cpu().detach().numpy() # Issue: only produces really low values
-        else:
-            img = Image.fromarray(x[idx])
-            img = transform(img)
-            img = torch.flatten(img)
-            sample_T = unflatten(outlier(img)).cpu().detach().numpy()  # Issue: only produces really low values
-        sample_T = row_norm(sample_T)  # This sometimes produces rows that sum > 1
-
-        # if idx % 1000 == 0:  # Print some examples
-        #     print("Outlier T:", sample_T)
-
-        flipped = flipper.multinomial(1, sample_T[i, :][0], 1)[0]
+        flipped = flipper.multinomial(1, P[i, :][0], 1)[0]
         new_y[idx] = np.where(flipped == 1)[0]
 
     return new_y
 
 
-def noisify_multiclass_symmetric(y_train, x_train, input_size, noise, outlier_noise, transform, random_state=None, nb_classes=10):
-    """mistakes:
-        flip in the symmetric way
+def instance_dependent_noisify(y, nb_classes):
     """
+    Flip classes according to a randomly generated class distribution.
+    random_state should be between 0 and the number of classes - 1.
+    """
+    new_y = y.copy()
 
-    P = np.ones((nb_classes, nb_classes))
-    n = noise
-    P = (n / (nb_classes - 1)) * P
+    for idx in np.arange(y.shape[0]):
 
-    if n > 0.0:
-        # 0 -> 1
-        P[0, 0] = 1. - n
-        for i in range(1, nb_classes - 1):
-            P[i, i] = 1. - n
-        P[nb_classes - 1, nb_classes - 1] = 1. - n
+        flipper = np.random.RandomState(idx)  # Get a new seed for each sample
+        flipped = flipper.multinomial(n=1, pvals=row_norm(flipper.rand(1, nb_classes)[0]), size=1)
+        new_y[idx] = np.where(flipped == 1)[0]
 
-        print(x_train.shape)
-
-        sample_idx = np.random.choice(x_train.shape[0], round(x_train.shape[0]*outlier_noise), replace=False)
-        # how do I want to split these labels so outliers are not used in multiclass_noisify
-        if input_size != 784:
-            x_train = x_train.reshape((x_train.shape[0], 3, 32, 32))
-            x_train = x_train.transpose((0, 2, 3, 1))
-        y_train_outlier = multiclass_outlier_noisify(x_train[sample_idx, :], y_train[sample_idx, :], input_size, transform=transform,
-                                                     nb_classes=nb_classes, random_state=random_state)
-        y_train_noisy = multiclass_noisify(y_train, P=P, random_state=random_state)
-
-        for idx, outlier_idx in enumerate(sample_idx):
-            y_train_noisy[outlier_idx] = y_train_outlier[idx]
-
-        actual_noise = (y_train_noisy != y_train).mean()
-        assert actual_noise > 0.0
-        print("ACTUAL NOISE RATE:", actual_noise)
-
-        outliers = np.ones(x_train.shape[0])
-        outliers[sample_idx] = 0
-
-        y_train = y_train_noisy
-
-    return y_train, actual_noise, P, outliers
+    return new_y
 
 
-def noisify(nb_classes=10, train_labels=None, noise_type=None, noise_rate=0, random_state=1):
-    if noise_type == 'symmetric':
-        train_noisy_labels, actual_noise_rate, t = noisify_multiclass_symmetric(train_labels, noise_rate,
-                                                                                random_state=random_state,
-                                                                                nb_classes=nb_classes)
+def noisify(y_train, x_train, indep_noise, dep_noise, nb_classes=10):
+    print(x_train.shape)
 
-    return train_noisy_labels, actual_noise_rate
+    P = np.ones((nb_classes, nb_classes))  # Generate True T
+    P = (indep_noise / (nb_classes - 1)) * P
+    P[0, 0] = 1. - indep_noise
+    for i in range(1, nb_classes - 1):
+        P[i, i] = 1. - indep_noise
+    P[nb_classes - 1, nb_classes - 1] = 1. - indep_noise
+
+    instance_dependent_index = int(y_train.shape[0]*dep_noise)
+    instance_independent_index = instance_dependent_index + int(y_train.shape[0]*indep_noise)
+
+    y_train_dependent = instance_dependent_noisify(y_train[:instance_dependent_index], nb_classes)
+    y_train_independent = instance_independent_noisify(y_train[instance_dependent_index:instance_independent_index], P)
+
+    y_train_noisy = np.concatenate((y_train_dependent, y_train_independent, y_train[instance_independent_index:]), axis=0)
+
+    actual_noise = (y_train_noisy != y_train).mean()
+    assert actual_noise > 0.0
+    print("ACTUAL NOISE RATE:", actual_noise)
+
+    return y_train_noisy, actual_noise, P
 
 
 def create_dir(args):

@@ -9,8 +9,8 @@ import torch
 
 
 class mnist_dataset(Data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, uniform_noise_rate=0.5, outlier_noise_rate=0.05,
-                 split_per=0.9, random_seed=1, num_class=10, noise_type='symmetric', anchor=True):
+    def __init__(self, train=True, transform=None, target_transform=None, indep_noise_rate=0.5, dep_noise_rate=0.05,
+                 split_per=0.9, random_seed=1, num_class=10, anchor=True):
 
         self.transform = transform
         self.target_transform = target_transform
@@ -27,10 +27,10 @@ class mnist_dataset(Data.Dataset):
 
         print(original_images.shape)
 
+        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
+            original_images, original_labels, indep_noise_rate, dep_noise_rate, split_per, random_seed, num_class)
 
-        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t, self.train_outliers, self.val_outliers = tools.dataset_split(
-            original_images, original_labels, self.transform, original_images.shape[1]**2, uniform_noise_rate, split_per,
-            random_seed, num_class, noise_type, outlier_noise_rate)
+        self.dep_index = int(original_labels.shape[0] * dep_noise_rate)
         pass
 
     def __getitem__(self, index):
@@ -87,8 +87,8 @@ class mnist_test_dataset(Data.Dataset):
 
 
 class cifar10_dataset(Data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, uniform_noise_rate=0.5, outlier_noise_rate=0.05,
-                 split_per=0.9, random_seed=1, num_class=10, noise_type='symmetric', anchor=True):
+    def __init__(self, train=True, transform=None, target_transform=None, indep_noise_rate=0.5, dep_noise_rate=0.05,
+                 split_per=0.9, random_seed=1, num_class=10, anchor=True):
 
         self.transform = transform
         self.target_transform = target_transform
@@ -105,9 +105,10 @@ class cifar10_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t, self.train_outliers, self.val_outliers = tools.dataset_split(
-            original_images, original_labels, self.transform, original_images.shape[1], uniform_noise_rate, split_per,
-            random_seed, num_class, noise_type, outlier_noise_rate)
+        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
+            original_images, original_labels, indep_noise_rate, dep_noise_rate, split_per, random_seed, num_class)
+
+        self.dep_index = int(original_labels.shape[0] * dep_noise_rate)
 
         if self.anchor:
             if self.train:
