@@ -262,6 +262,10 @@ for epoch in range(args.n_epoch):
 
         t = trans()
 
+        print("*******************")
+        print(t)
+        print("*******************")
+
         out = torch.mm(clean, t)
 
         if args.vol_min != 'True':  # Revert T correction if vol_min is False
@@ -369,9 +373,6 @@ for epoch in range(args.n_epoch):
         torch.save(state, './checkpoint/current_net')
 
         est_T = t.detach().cpu().numpy()
-        # estimate_error = tools.error(est_T, train_data.t)
-        print("HEREHEREHEREHERE")
-        print(est_T)
         estimate_error = tools.get_estimation_error(est_T, train_data.t)
 
         matrix_path = matrix_dir + '/' + 'matrix_epoch_%d.npy' % (epoch + 1)
