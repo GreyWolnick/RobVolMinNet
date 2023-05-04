@@ -16,8 +16,9 @@ def row_norm(T):
 
 
 def vector_norm(v):
-    mean = np.mean(v)
-    return v - mean
+    v_sum = np.sum(v)
+    v_norm = v / v_sum
+    return v_norm
 
 
 def instance_independent_noisify(y, P, random_state=1):
