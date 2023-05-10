@@ -25,7 +25,8 @@ parser.add_argument('--reg_type', type=str, default='min')
 parser.add_argument('--vol_min', type=str, default='True')
 # parser.add_argument('--vol_min', action='store_true') Possibly?
 parser.add_argument('--noise_type', type=str, default='symmetric')  # Get rid of this
-parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.2)
+parser.add_argument('--noise_rate', type=float, help='corruption rate, should be less than 1', default=0.4)
+parser.add_argument('--percent_instance_noise', type = float, default =0.1)
 parser.add_argument('--indep_noise_rate', type=float, help='instance independent corruption rate, should be less than 1', default=0.2)
 parser.add_argument('--dep_noise_rate', type=float, help='instance dependent corruption rate, should be less than 1', default=0.4)
 parser.add_argument('--seed', type=int, default=1)
