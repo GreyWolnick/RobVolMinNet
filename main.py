@@ -359,7 +359,7 @@ for epoch in range(args.n_epoch):
                 out = clean
 
             if args.loss_func == "gce":
-                loss = criterion(clean, targets, indexes)
+                loss = criterion(out, targets, indexes)  # Clean or out????
             else:
                 loss = criterion(out.log(), targets.long())
 
@@ -380,8 +380,8 @@ for epoch in range(args.n_epoch):
         model.eval()
         trans.eval()
 
-        for batch_idx, (batch_x, batch_y, indexes) in enumerate(test_loader):
-            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        for batch_idx, (inputs, targets, indexes) in enumerate(test_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
 
             clean = model(inputs)
 
