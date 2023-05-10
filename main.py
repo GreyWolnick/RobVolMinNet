@@ -130,6 +130,8 @@ save_dir, model_dir, matrix_dir, logs = create_dir(args)
 
 print(args, file=logs, flush=True)
 
+print("here1")
+
 # optimizer and StepLR
 optimizer_es = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, momentum=0.9)
 scheduler1 = MultiStepLR(optimizer_es, milestones=milestones, gamma=0.1)
@@ -213,6 +215,8 @@ def maximum_volume_regularization(H):
 
 def minimum_volume_regularization(T):
     return T.slogdet().logabsdet
+
+print("here")
 
 
 for epoch in range(args.n_epoch):

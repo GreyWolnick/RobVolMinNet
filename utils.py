@@ -110,7 +110,7 @@ def noisify(train_data, train_labels, seed, noise_rate, feature_size, percent_in
     noisy_labels = []
     flag_instance_indep_noise = []
     for i, sample_numpy in enumerate(train_data):
-        # print('##########################################################')
+        print('##########################################################')
         PILconv = T.ToPILImage()
         if feature_size == 28 * 28:
             sample_numpy = sample_numpy.reshape((28, 28))
