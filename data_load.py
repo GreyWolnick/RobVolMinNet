@@ -120,11 +120,13 @@ class cifar10_dataset(Data.Dataset):
                 self.val_data = self.val_data.transpose((0, 2, 3, 1))
 
     def __getitem__(self, index):
-        if self.train:
-            img, label = self.train_data[index], self.train_labels[index]
 
+        if self.train:
+            img, label, clean_label, flag_noise_type = self.train_data[index], self.train_labels[index], \
+                                                       self.clean_train_labels[index], self.flag_train[index]
         else:
-            img, label = self.val_data[index], self.val_labels[index]
+            img, label, clean_label, flag_noise_type = self.val_data[index], self.val_labels[index], \
+                                                       self.clean_val_labels[index], self.flag_val[index],
 
         img = Image.fromarray(img)
 
@@ -133,8 +135,9 @@ class cifar10_dataset(Data.Dataset):
 
         if self.target_transform is not None:
             label = self.target_transform(label)
+            clean_label = self.target_transform(clean_label)
 
-        return img, label, index
+        return img, label, clean_label, index, flag_noise_type
 
     def __len__(self):
 
