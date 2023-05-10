@@ -44,8 +44,8 @@ class TruncatedLoss(nn.Module):
         # plt.stem(indexes, Lq.detach().cpu().numpy(), linefmt='b-', markerfmt='bo', label='Normal')
         # plt.stem(indexes[noise_indices], Lq[noise_indices].detach().cpu().numpy(), linefmt='r-', markerfmt='ro', label='Noise')
 
-        plt.stem(indexes, Lq.detach().cpu(), 'b-', label='Normal')
-        plt.stem(indexes[noise_indices], Lq[noise_indices].detach().cpu(), 'r-', label='Noise')
+        plt.stem(indexes, Lq.detach().cpu(), markerfmt='bo', label='Normal')
+        plt.stem(indexes[noise_indices], Lq[noise_indices].detach().cpu(), markerfmt='ro', label='Noise')
 
         plt.xlabel('Index')
         plt.ylabel('Lq')
