@@ -293,8 +293,8 @@ for epoch in range(args.n_epoch):
         model = now['current_net']
         model.train()
 
-    for batch_idx, (batch_x, batch_y, batch_clean_y, indexes, flag_noise_type) in enumerate(train_loader):
-        batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+    for batch_idx, (inputs, targets, targets_clean, indexes, flag_noise_type) in enumerate(train_loader):
+        inputs, targets = inputs.to(device), targets.to(device)
 
         optimizer_es.zero_grad()
         optimizer_trans.zero_grad()
@@ -347,8 +347,8 @@ for epoch in range(args.n_epoch):
         model.eval()
         trans.eval()
 
-        for batch_idx, (batch_x, batch_y, batch_clean_y, indexes, flag_noise_type) in enumerate(val_loader):
-            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
+        for batch_idx, (inputs, targets, targets_clean, indexes, flag_noise_type) in enumerate(val_loader):
+            inputs, targets = inputs.to(device), targets.to(device)
 
             clean = model(inputs)
 
