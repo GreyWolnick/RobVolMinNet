@@ -266,12 +266,9 @@ for epoch in range(args.n_epoch):
         model.eval()
         for batch_idx, (inputs, targets, targets_clean, indexes, flag_noise_type) in enumerate(train_loader):
             inputs, targets, targets_clean = inputs.to(device), targets.to(device), targets_clean.to(device)
-            if args.flag_crowdnetwork == 0:
-                clean = model(inputs)
-                t = trans()
-                out = torch.mm(clean, t)
-            else:
-                clean, out, t = model(inputs)
+            clean = model(inputs)
+            t = trans()
+            out = torch.mm(clean, t)
             criterion.update_weight(out, targets, indexes, args.device, flag_noise_type)
             weights = criterion.get_weight(indexes)
             flag_clean = torch.eq(targets, targets_clean)
