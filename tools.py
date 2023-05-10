@@ -23,21 +23,32 @@ def get_estimation_error(T, T_true):
 
 # flip clean labels to noisy labels
 # train set and val set split
-def dataset_split(train_images, train_labels, indep_noise, dep_noise, split_per=0.9, random_seed=1, num_classes=10):
-    clean_train_labels = train_labels[:, np.newaxis]
+def dataset_split(train_images, train_labels, noise_rate=0.5, percent_instance_noise=0.1, transform=[], split_per=0.9, random_seed=1, num_class=10, feature_size=28*28):
 
-    noisy_labels, actual_noise, transition_matrix = utils.noisify(clean_train_labels, train_images, indep_noise,
-                                                                  dep_noise, num_classes)
+    noisy_labels, real_noise_rate, transition_matrix, flag_instance_dep_noise = utils.noisify(train_images,
+                                                                                              train_labels,
+                                                                                              random_seed,
+                                                                                              noise_rate=noise_rate,
+                                                                                              feature_size=feature_size,
+                                                                                              percent_instance_noise=percent_instance_noise,
+                                                                                              transform=transform,
+                                                                                              num_class=num_class)
+
+    noisy_labels = np.array(noisy_labels)
+    flag_instance_dep_noise = np.array(flag_instance_dep_noise)
 
     noisy_labels = noisy_labels.squeeze()
+    flag_instance_dep_noise = flag_instance_dep_noise.squeeze()
 
     num_samples = int(noisy_labels.shape[0])
     np.random.seed(random_seed)
-    train_set_index = np.random.choice(num_samples, int(num_samples*split_per), replace=False)
+    train_set_index = np.random.choice(num_samples, int(num_samples * split_per), replace=False)
     index = np.arange(train_images.shape[0])
     val_set_index = np.delete(index, train_set_index)
 
     train_set, val_set = train_images[train_set_index, :], train_images[val_set_index, :]
-    train_labels, val_labels = noisy_labels[train_set_index], noisy_labels[val_set_index]
+    train_labels_noisy, val_labels_noisy = noisy_labels[train_set_index], noisy_labels[val_set_index]
+    clean_train_labels, clean_val_labels = train_labels[train_set_index], train_labels[val_set_index]
+    flag_train, flag_val = flag_instance_dep_noise[train_set_index], flag_instance_dep_noise[val_set_index]
 
-    return train_set, val_set, train_labels, val_labels, transition_matrix
+    return train_set, val_set, train_labels_noisy, val_labels_noisy, transition_matrix, clean_train_labels, clean_val_labels, flag_train, flag_val

@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import math
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 
 class TruncatedLoss(nn.Module):
 
@@ -12,6 +14,7 @@ class TruncatedLoss(nn.Module):
         self.q = q
         self.k = k
         self.weight = torch.nn.Parameter(data=torch.ones(trainset_size, 1), requires_grad=False)
+        self.count = 0
 
     def forward(self, logits, targets, indexes):
         # p = F.softmax(logits, dim=1)
@@ -23,18 +26,34 @@ class TruncatedLoss(nn.Module):
 
         return loss
 
-    def update_weight(self, logits, targets, indexes):
+    def update_weight(self, logits, targets, indexes, device, flag_noise_type):
         # p = F.softmax(logits, dim=1)
         Yg = torch.gather(logits, 1, torch.unsqueeze(targets, 1))
         Lq = ((1 - (Yg ** self.q)) / self.q)
         Lqk = np.repeat(((1 - (self.k ** self.q)) / self.q), targets.size(0))
         Lqk = torch.from_numpy(Lqk).type(torch.cuda.FloatTensor)
+        Lqk = Lqk.to(device)
         Lqk = torch.unsqueeze(Lqk, 1)
 
         condition = torch.gt(Lqk, Lq)
+        condition = torch.gt(Yg, self.k)
+        condition = torch.gt(Lq, self.k)
 
-        self.weight[indexes] = condition.type(torch.cuda.FloatTensor)
+        noise_indices = np.where(flag_noise_type == 1)[0]
 
-    def get_weight(self):
-        return np.array(self.weight.cpu())
+        plt.stem(indexes, Lq, linefmt='b-', markerfmt='bo', label='Normal')
+        plt.stem(indexes[noise_indices], Lq[noise_indices], linefmt='r-', markerfmt='ro', label='Noise')
+
+        plt.xlabel('Index')
+        plt.ylabel('Lq')
+        plt.title('Stem plot of Lq')
+        plt.legend()
+        plt.savefig(f'Lq_plot_{self.count}.png')
+        self.count += 1
+
+        temp = condition.type(torch.cuda.FloatTensor)
+        self.weight[indexes] = temp.to(device)
+
+    def get_weight(self, indexes):
+        return self.weight[indexes].squeeze()
 

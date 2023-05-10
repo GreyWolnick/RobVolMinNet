@@ -56,14 +56,13 @@ if args.dataset == 'mnist':
     num_classes = 10
     milestones = None
 
-    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
-                                         indep_noise_rate=args.indep_noise_rate, dep_noise_rate=args.dep_noise_rate,
+    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
+                                         target_transform=transform_target,
+                                         noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                          random_seed=args.seed, anchor=args.anchor)
-
     val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       indep_noise_rate=args.indep_noise_rate, dep_noise_rate=args.dep_noise_rate,
+                                       noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                        random_seed=args.seed)
-
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = Lenet()
     trans = sig_t(device, args.num_classes)
@@ -74,11 +73,12 @@ if args.dataset == 'fashionmnist':
     num_classes = 10
     milestones = None
 
-    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
-                                         indep_noise_rate=args.indep_noise_rate, dep_noise_rate=args.dep_noise_rate,
+    train_data = data_load.mnist_dataset(True, transform=transform_train(args.dataset),
+                                         target_transform=transform_target,
+                                         noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                          random_seed=args.seed, anchor=args.anchor)
     val_data = data_load.mnist_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                       indep_noise_rate=args.indep_noise_rate, dep_noise_rate=args.dep_noise_rate,
+                                       noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                        random_seed=args.seed)
     test_data = data_load.mnist_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = Lenet()
@@ -91,11 +91,13 @@ if args.dataset == 'cifar10':
     args.num_classes = 10
     milestones = [30, 60]
 
-    train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset), target_transform=transform_target,
-                                           indep_noise_rate=args.indep_noise_rate, dep_noise_rate=args.dep_noise_rate,
-                                           random_seed=args.seed, anchor=args.anchor)
+    train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset),
+                                         target_transform=transform_target,
+                                         noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
+                                         random_seed=args.seed, anchor=args.anchor)
+
     val_data = data_load.cifar10_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
-                                         indep_noise_rate=args.indep_noise_rate, dep_noise_rate=args.dep_noise_rate,
+                                         noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                          random_seed=args.seed)
     test_data = data_load.cifar10_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
     model = ResNet18(args.num_classes)
@@ -216,14 +218,14 @@ for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
     print(f'epoch {epoch}')
 
-    if args.loss_func == "gce" and (epoch + 1) % 10 == 0:
-        fig, ax = plt.subplots()
-        ax.plot(criterion.get_weight())
-        ax.set_title('w')
-        ax.set_xlabel('Index')
-        fig.savefig(f'epoch{epoch}.png')
-        # outlier_detection_rate = (train_data.train_outliers != criterion.get_weight()).mean()
-        # outlier_detection_rate_list.append(outlier_detection_rate)
+    # if args.loss_func == "gce" and (epoch + 1) % 10 == 0:
+    #     fig, ax = plt.subplots()
+    #     ax.plot(criterion.get_weight())
+    #     ax.set_title('w')
+    #     ax.set_xlabel('Index')
+    #     fig.savefig(f'epoch{epoch}.png')
+    #     # outlier_detection_rate = (train_data.train_outliers != criterion.get_weight()).mean()
+    #     # outlier_detection_rate_list.append(outlier_detection_rate)
 
     model.train()
     trans.train()
@@ -235,25 +237,59 @@ for epoch in range(args.n_epoch):
     val_acc = 0.
     test_loss = 0.
     test_acc = 0.
+    weight_acc = 0.
 
     if args.loss_func == "gce" and (epoch + 1) >= args.start_prune and (epoch + 1) % 10 == 0:
+        # checkpoint_dict = torch.load('./checkpoint/ckpt.t7.' + args.sess)
+        # model = checkpoint_dict['net']
+        # model.eval()
+        # for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
+        #     inputs, targets = inputs.cuda(), targets.cuda()
+        #     clean = model(inputs)
+        #     t = trans()
+        #     out = torch.mm(clean, t)
+        #     if args.vol_min != 'True':  # Revert T correction if vol_min is False
+        #         out = clean
+        #     criterion.update_weight(out, targets, indexes)
+        # now = torch.load('./checkpoint/current_net')
+        # model = now['current_net']
+        # model.train()
+
+        print('Pruning')
         checkpoint_dict = torch.load('./checkpoint/ckpt.t7.' + args.sess)
         model = checkpoint_dict['net']
         model.eval()
-        for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
-            inputs, targets = inputs.cuda(), targets.cuda()
-            clean = model(inputs)
-            t = trans()
-            out = torch.mm(clean, t)
-            if args.vol_min != 'True':  # Revert T correction if vol_min is False
-                out = clean
-            criterion.update_weight(out, targets, indexes)
+        for batch_idx, (inputs, targets, targets_clean, indexes, flag_noise_type) in enumerate(train_loader):
+            inputs, targets, targets_clean = inputs.to(device), targets.to(device), targets_clean.to(device)
+            if args.flag_crowdnetwork == 0:
+                clean = model(inputs)
+                t = trans()
+                out = torch.mm(clean, t)
+            else:
+                clean, out, t = model(inputs)
+            criterion.update_weight(out, targets, indexes, args.device, flag_noise_type)
+            weights = criterion.get_weight(indexes)
+            flag_clean = torch.eq(targets, targets_clean)
+            flag_clean = flag_clean.to(args.device, dtype=torch.int32)
+            flag_noise_type = flag_noise_type.to(args.device, dtype=torch.int32)
+            flag_sel = torch.eq(flag_clean, flag_noise_type)
+            flag_sel = flag_sel.to(args.device, dtype=torch.int32)
+            weights = weights.to(args.device, dtype=torch.int32)
+            # print('##################')
+            # print(flag_noise_type)
+            # print(weights)
+            weight_correct = (flag_sel == weights).sum()
+            weight_acc += weight_correct.item()
+
+        print('Weight Acc: {:.6f}'.format(weight_acc / (len(train_data))), file=logs, flush=True)
+        print('Weight Acc: {:.6f}'.format(weight_acc / (len(train_data))))
+
         now = torch.load('./checkpoint/current_net')
         model = now['current_net']
         model.train()
 
-    for batch_idx, (inputs, targets, indexes) in enumerate(train_loader):
-        inputs, targets = inputs.cuda(), targets.cuda()
+    for batch_idx, (batch_x, batch_y, batch_clean_y, indexes, flag_noise_type) in enumerate(train_loader):
+        batch_x, batch_y = batch_x.to(device), batch_y.to(device)
 
         optimizer_es.zero_grad()
         optimizer_trans.zero_grad()
@@ -267,7 +303,6 @@ for epoch in range(args.n_epoch):
         if args.vol_min != 'True':  # Revert T correction if vol_min is False
             out = clean
 
-        # vol_loss = t.slogdet().logabsdet
         if args.reg_type == "max":
             regularizer_loss = maximum_volume_regularization(clean)
         else:
@@ -307,8 +342,8 @@ for epoch in range(args.n_epoch):
         model.eval()
         trans.eval()
 
-        for batch_idx, (inputs, targets, indexes) in enumerate(val_loader):
-            inputs, targets = inputs.cuda(), targets.cuda()
+        for batch_idx, (batch_x, batch_y, batch_clean_y, indexes, flag_noise_type) in enumerate(val_loader):
+            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
 
             clean = model(inputs)
 
@@ -340,8 +375,8 @@ for epoch in range(args.n_epoch):
         model.eval()
         trans.eval()
 
-        for batch_idx, (inputs, targets, indexes) in enumerate(test_loader):
-            inputs, targets = inputs.cuda(), targets.cuda()
+        for batch_idx, (batch_x, batch_y, indexes) in enumerate(test_loader):
+            batch_x, batch_y = batch_x.to(device), batch_y.to(device)
 
             clean = model(inputs)
 

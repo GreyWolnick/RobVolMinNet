@@ -9,14 +9,13 @@ import torch
 
 
 class mnist_dataset(Data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, indep_noise_rate=0.5, dep_noise_rate=0.05,
+    def __init__(self, train=True, transform=None, target_transform=None, noise_rate=0.5, percent_instance_noise=0.1,
                  split_per=0.9, random_seed=1, num_class=10, anchor=True):
 
         self.transform = transform
         self.target_transform = target_transform
         self.train = train
         self.anchor = anchor
-        self.outlier_indexes = []
 
         if anchor:
             original_images = np.load('data/mnist/train_images.npy')
@@ -27,18 +26,19 @@ class mnist_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images, original_labels, indep_noise_rate, dep_noise_rate, split_per, random_seed, num_class)
-
-        self.dep_index = int(original_labels.shape[0] * dep_noise_rate)
+        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t, self.clean_train_labels, self.clean_val_labels, self.flag_train, self.flag_val = tools.dataset_split(
+            original_images, original_labels, noise_rate, percent_instance_noise, transform, split_per, random_seed,
+            num_class, 28 * 28)
         pass
 
     def __getitem__(self, index):
 
         if self.train:
-            img, label = self.train_data[index], self.train_labels[index]
+            img, label, clean_label, flag_noise_type = self.train_data[index], self.train_labels[index], \
+                                                       self.clean_train_labels[index], self.flag_train[index]
         else:
-            img, label = self.val_data[index], self.val_labels[index]
+            img, label, clean_label, flag_noise_type = self.val_data[index], self.val_labels[index], \
+                                                       self.clean_val_labels[index], self.flag_val[index],
 
         img = Image.fromarray(img)
 
@@ -47,8 +47,9 @@ class mnist_dataset(Data.Dataset):
 
         if self.target_transform is not None:
             label = self.target_transform(label)
+            clean_label = self.target_transform(clean_label)
 
-        return img, label, index
+        return img, label, clean_label, index, flag_noise_type
 
     def __len__(self):
 
@@ -87,7 +88,7 @@ class mnist_test_dataset(Data.Dataset):
 
 
 class cifar10_dataset(Data.Dataset):
-    def __init__(self, train=True, transform=None, target_transform=None, indep_noise_rate=0.5, dep_noise_rate=0.05,
+    def __init__(self, train=True, transform=None, target_transform=None, noise_rate=0.5, percent_instance_noise=0.1,
                  split_per=0.9, random_seed=1, num_class=10, anchor=True):
 
         self.transform = transform
@@ -105,10 +106,9 @@ class cifar10_dataset(Data.Dataset):
 
         print(original_images.shape)
 
-        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t = tools.dataset_split(
-            original_images, original_labels, indep_noise_rate, dep_noise_rate, split_per, random_seed, num_class)
-
-        self.dep_index = int(original_labels.shape[0] * dep_noise_rate)
+        self.train_data, self.val_data, self.train_labels, self.val_labels, self.t, self.clean_train_labels, self.clean_val_labels, self.flag_train, self.flag_val = tools.dataset_split(
+            original_images, original_labels, noise_rate, percent_instance_noise, transform, split_per, random_seed,
+            num_class, 3072)
 
         if self.anchor:
             if self.train:

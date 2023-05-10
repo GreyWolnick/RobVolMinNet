@@ -1,6 +1,9 @@
-import os
+import os, torch
 import os.path
 import numpy as np
+import torchvision.transforms as T
+from math import inf
+import torch.nn.functional as F
 
 
 def col_norm(T):
@@ -54,7 +57,7 @@ def instance_dependent_noisify(y, nb_classes):
     return new_y
 
 
-def noisify(y_train, x_train, indep_noise, dep_noise, nb_classes=10):
+def noisify_test(y_train, x_train, indep_noise, dep_noise, nb_classes=10):
     print(x_train.shape)
 
     P = np.ones((nb_classes, nb_classes))  # Generate True T
@@ -77,6 +80,92 @@ def noisify(y_train, x_train, indep_noise, dep_noise, nb_classes=10):
     print("ACTUAL NOISE RATE:", actual_noise)
 
     return y_train_noisy, actual_noise, P
+
+
+def noisify(train_data, train_labels, seed, noise_rate, feature_size, percent_instance_noise, transform, num_class=10):
+    np.random.seed(seed)
+
+    # Creating some heavy noise rate for instance dependent
+    q_ = np.random.normal(loc=(noise_rate + 0.4), scale=0.1, size=1000000)
+    q = []
+    for pro in q_:
+        if 0 < pro < 1:
+            q.append(pro)
+        if len(q) == 80000:
+            break
+
+    w = np.random.normal(loc=0, scale=1, size=(num_class, feature_size, num_class))
+    d = np.random.normal(loc=0, scale=1, size=(num_class, num_class))
+    P = np.ones((num_class, num_class))
+    P = (noise_rate / (num_class - 1)) * P
+    if noise_rate > 0.0:
+        # 0 -> 1
+        P[0, 0] = 1. - noise_rate
+        for i in range(1, num_class - 1):
+            P[i, i] = 1. - noise_rate
+        P[num_class - 1, num_class - 1] = 1. - noise_rate
+
+    # w = np.random.normal(loc=0,scale=1,size=(32*32*3,num_class))
+    TM = np.zeros((num_class, num_class))  # transition matrix constant
+    noisy_labels = []
+    flag_instance_indep_noise = []
+    for i, sample_numpy in enumerate(train_data):
+        # print('##########################################################')
+        PILconv = T.ToPILImage()
+        if feature_size == 28 * 28:
+            sample_numpy = sample_numpy.reshape((28, 28))
+        else:
+            sample_numpy = sample_numpy.reshape((3, 32, 32))
+        sample_tensor = torch.tensor(sample_numpy)
+        sample_PIL = PILconv(sample_tensor)
+        sample_tensor = transform(sample_PIL)
+        sample_numpy = sample_tensor.numpy()
+        sample = sample_numpy.flatten()
+        flag_instance_noise = np.random.binomial(1, percent_instance_noise)
+        if flag_instance_noise:
+            p_all = np.matmul(sample, w[train_labels[i]])
+            # print(p_all)
+            p_all[train_labels[i]] = -inf
+            # print(p_all)
+            p_all = F.softmax(torch.tensor(p_all), dim=0)
+            # print(p_all)
+            p_all = q[i] * F.softmax(p_all).numpy()
+            # print(p_all)
+            p_all[train_labels[i]] = 1 - q[i]
+            # print(p_all)
+            p_all = p_all / sum(p_all)
+            # print("Instance Dependent Noise")
+            # print(p_all)
+            # print("True class label")
+            # print(train_labels[i])
+            flag_instance_indep_noise.append(0)
+        else:
+            # Asymmetric noise
+            # p_all = d[train_labels[i]].flatten()
+            # p_all[train_labels[i]] = -inf
+            # p_all = q[train_labels[i]]* F.softmax(torch.tensor(p_all),dim=0).numpy()
+            # p_all[train_labels[i]] = 1 - q[train_labels[i]]
+            # p_all = p_all/sum(p_all)
+
+            p_all = P[:, train_labels[i]]
+            TM[:, train_labels[i]] = p_all
+            flag_instance_indep_noise.append(1)
+        # print("Instance Independent Noise")
+        # print(p_all)
+        # print("True class label")
+        # print(train_labels[i])
+
+        noisy_labels.append(np.random.choice(np.arange(num_class), p=p_all))
+
+    over_all_noise_rate = 1 - float(torch.tensor(train_labels).eq(torch.tensor(noisy_labels)).sum()) / train_data.shape[
+        0]
+    print("Overall noise rate")
+    print(over_all_noise_rate)
+    ind = torch.tensor(train_labels).eq(torch.tensor(noisy_labels))
+    clean_data = train_data[ind]
+    clean_lables = train_labels[ind]
+
+    return noisy_labels, over_all_noise_rate, TM, flag_instance_indep_noise
 
 
 def create_dir(args):
