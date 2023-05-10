@@ -40,17 +40,38 @@ class TruncatedLoss(nn.Module):
         condition = torch.gt(Lq, self.k)
 
         if self.count % 100 == 0:
-
             noise_indices = np.where(flag_noise_type == 1)[0]
 
-            plt.stem(indexes.numpy(), Lq.detach().cpu().numpy().flatten(), linefmt='b-', markerfmt='bo', basefmt='b-')
-            plt.stem(indexes[noise_indices].numpy(), Lq[noise_indices].detach().cpu().numpy().flatten(), linefmt='r-', markerfmt='ro', basefmt='r-')
+            indexes_np = indexes.numpy()
+            Lq_np = Lq.detach().cpu().numpy().flatten()
 
-            plt.xlabel('Index')
-            plt.ylabel('Lq')
-            plt.title('Lq')
-            plt.legend()
-            plt.savefig(f'Lq_plot_{self.count}.png')
+            # Create figure and axes
+            fig, ax = plt.subplots()
+
+            # Plot the first stem in blue
+            ax.stem(indexes_np, Lq_np, linefmt='b-', markerfmt='bo', basefmt='b-')
+
+            # Plot the second stem in red
+            ax.stem(indexes_np[noise_indices], Lq_np[noise_indices], linefmt='r-', markerfmt='ro', basefmt='r-')
+
+            # Set labels and title
+            ax.set_xlabel('Index')
+            ax.set_ylabel('Lq')
+            ax.set_title('Lq')
+
+            # Save the plot
+            fig.savefig(f'Lq_plot_{self.count}.png')
+
+            # noise_indices = np.where(flag_noise_type == 1)[0]
+            #
+            # plt.stem(indexes.numpy(), Lq.detach().cpu().numpy().flatten(), linefmt='b-', markerfmt='bo', basefmt='b-')
+            # plt.stem(indexes[noise_indices].numpy(), Lq[noise_indices].detach().cpu().numpy().flatten(), linefmt='r-', markerfmt='ro', basefmt='r-')
+            #
+            # plt.xlabel('Index')
+            # plt.ylabel('Lq')
+            # plt.title('Lq')
+            # # plt.legend()
+            # plt.savefig(f'Lq_plot_{self.count}.png')
 
         self.count += 1
 
