@@ -18,7 +18,9 @@ class TruncatedLoss(nn.Module):
 
     def forward(self, logits, targets, indexes):
         # p = F.softmax(logits, dim=1)
+        print(logits.shape, targets.shape, indexes.shape)
         Yg = torch.gather(logits, 1, torch.unsqueeze(targets, 1))
+        print(Yg.shape)
 
         loss = ((1 - (Yg ** self.q)) / self.q) * self.weight[indexes] - ((1 - (self.k ** self.q)) / self.q) * \
                self.weight[indexes]
