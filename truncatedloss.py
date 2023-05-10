@@ -41,12 +41,15 @@ class TruncatedLoss(nn.Module):
 
         noise_indices = np.where(flag_noise_type == 1)[0]
 
-        plt.stem(indexes, Lq.detach().cpu().numpy(), linefmt='b-', markerfmt='bo', label='Normal')
-        plt.stem(indexes[noise_indices], Lq[noise_indices].detach().cpu().numpy(), linefmt='r-', markerfmt='ro', label='Noise')
+        # plt.stem(indexes, Lq.detach().cpu().numpy(), linefmt='b-', markerfmt='bo', label='Normal')
+        # plt.stem(indexes[noise_indices], Lq[noise_indices].detach().cpu().numpy(), linefmt='r-', markerfmt='ro', label='Noise')
+
+        plt.plot(indexes, Lq.detach().cpu().numpy(), 'b-', label='Normal')
+        plt.plot(indexes[noise_indices], Lq[noise_indices].detach().cpu().numpy(), 'r-', label='Noise')
 
         plt.xlabel('Index')
         plt.ylabel('Lq')
-        plt.title('Stem plot of Lq')
+        plt.title('Lq')
         plt.legend()
         plt.savefig(f'Lq_plot_{self.count}.png')
         self.count += 1
