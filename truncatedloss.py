@@ -39,21 +39,19 @@ class TruncatedLoss(nn.Module):
         condition = torch.gt(Yg, self.k)
         condition = torch.gt(Lq, self.k)
 
-        noise_indices = np.where(flag_noise_type == 1)[0]
+        if self.count % 100 == 0:
 
-        # plt.stem(indexes, Lq.detach().cpu().numpy(), linefmt='b-', markerfmt='bo', label='Normal')
-        # plt.stem(indexes[noise_indices], Lq[noise_indices].detach().cpu().numpy(), linefmt='r-', markerfmt='ro', label='Noise')
+            noise_indices = np.where(flag_noise_type == 1)[0]
 
-        print(indexes.numpy())
-        print(Lq.detach().cpu().numpy().flatten())
-        plt.stem(indexes.numpy(), Lq.detach().cpu().numpy().flatten()) #, markerfmt='bo', label='Normal'
-        plt.stem(indexes[noise_indices].numpy(), Lq[noise_indices].detach().cpu().numpy().flatten()) #, markerfmt='ro', label='Noise'
+            plt.stem(indexes.numpy(), Lq.detach().cpu().numpy().flatten(), linefmt='b-', markerfmt='bo', basefmt='b-')
+            plt.stem(indexes[noise_indices].numpy(), Lq[noise_indices].detach().cpu().numpy().flatten(), linefmt='r-', markerfmt='ro', basefmt='r-')
 
-        plt.xlabel('Index')
-        plt.ylabel('Lq')
-        plt.title('Lq')
-        plt.legend()
-        plt.savefig(f'Lq_plot_{self.count}.png')
+            plt.xlabel('Index')
+            plt.ylabel('Lq')
+            plt.title('Lq')
+            plt.legend()
+            plt.savefig(f'Lq_plot_{self.count}.png')
+
         self.count += 1
 
         temp = condition.type(torch.cuda.FloatTensor)
