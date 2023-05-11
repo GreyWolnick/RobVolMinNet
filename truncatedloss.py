@@ -60,7 +60,7 @@ class TruncatedLoss(nn.Module):
             ax.set_title('Lq')
 
             # Save the plot
-            fig.savefig(f'Lq_plot_{self.count}.png')
+            fig.savefig(f'Lq_plot_{self.count}_q={self.q}_k={self.k}.png')
 
             # noise_indices = np.where(flag_noise_type == 1)[0]
             #
