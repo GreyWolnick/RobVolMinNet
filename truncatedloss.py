@@ -36,8 +36,8 @@ class TruncatedLoss(nn.Module):
         Lqk = torch.unsqueeze(Lqk, 1)
 
         condition = torch.gt(Lqk, Lq)
-        condition = torch.gt(Yg, self.k)
-        condition = torch.gt(Lq, self.k)
+        # condition = torch.gt(Yg, self.k)
+        # condition = torch.gt(Lq, self.k)
 
         if self.count % 100 == 0:
             noise_indices = np.where(flag_noise_type == 1)[0]
