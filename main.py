@@ -113,16 +113,16 @@ if args.dataset == 'cifar100':
 
     milestones = [30, 60]
 
-    train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset),
+    train_data = data_load.cifar100_dataset(True, transform=transform_train(args.dataset),
                                          target_transform=transform_target,
                                          noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                          random_seed=args.seed, anchor=args.anchor)
 
-    val_data = data_load.cifar10_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
+    val_data = data_load.cifar100_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
                                          noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
                                          random_seed=args.seed)
-    test_data = data_load.cifar10_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
-    
+    test_data = data_load.cifar100_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
+
     model = ResNet34(args.num_classes)
     trans = sig_t(device, args.num_classes, init=args.init)
     optimizer_trans = optim.Adam(trans.parameters(), lr=args.lr, weight_decay=0)
