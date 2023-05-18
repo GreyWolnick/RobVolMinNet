@@ -262,7 +262,7 @@ for epoch in range(args.n_epoch):
         # model.train()
 
         print('Pruning')
-        checkpoint_dict = torch.load('./checkpoint/ckpt.t7.' + args.sess)
+        checkpoint_dict = torch.load('./checkpoint/ckpt.t7.gce')
         model = checkpoint_dict['net']
         model.eval()
         for batch_idx, (inputs, targets, targets_clean, indexes, flag_noise_type) in enumerate(train_loader):
