@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader
 from transformer import transform_train, transform_test, transform_target
 from torch.optim.lr_scheduler import MultiStepLR
 from truncatedloss import TruncatedLoss
+from loss import symmetric_cross_entropy
 
 import matplotlib.pyplot as plt
 
@@ -38,6 +39,9 @@ parser.add_argument('--anchor', action='store_false')  # Seems unnecessary
 
 parser.add_argument('--sess', default='default', type=str, help='session id')
 parser.add_argument('--start_prune', default=40, type=int, help='number of total epochs to run')
+
+parser.add_argument('--alpha', default=0.1, type=float, help='alpha parameter for SL')
+parser.add_argument('--beta', default=1.0, type=float, help='beta parameter for SL')
 
 args = parser.parse_args()
 np.set_printoptions(precision=2, suppress=True)
@@ -158,6 +162,8 @@ test_loader = DataLoader(dataset=test_data,
 
 if args.loss_func == "gce":
     criterion = TruncatedLoss(args.q, args.k, trainset_size=len(train_data)).cuda()  # Truncated Loss
+elif args.loss_func == "sl":
+    criterion = symmetric_cross_entropy(args.alpha, args.beta)
 else:
     criterion = F.nll_loss  # Negative Log Likelihood Loss
 
