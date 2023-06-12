@@ -323,6 +323,9 @@ for epoch in range(args.n_epoch):
         if args.loss_func == "gce":
             # out.log()
             ce_loss = criterion(out, targets, indexes)
+        elif args.loss_func == "sl":
+            print(out.shape, targets.shape)
+            ce_loss = criterion(out, targets)
         else:
             ce_loss = criterion(out.log(), targets.long())
 
