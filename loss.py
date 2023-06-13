@@ -2,6 +2,12 @@ import torch
 
 def symmetric_cross_entropy(alpha, beta):
     def loss(y_true, y_pred):
+        print("y_true")
+        print(y_true)
+
+        print("y_pred")
+        print(y_pred)
+        exit()
         y_true_1 = y_true
         y_pred_1 = y_pred
 
