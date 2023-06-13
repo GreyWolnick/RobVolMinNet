@@ -324,7 +324,7 @@ for epoch in range(args.n_epoch):
             # out.log()
             ce_loss = criterion(out, targets, indexes)
         elif args.loss_func == "sl":
-            ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), out)
+            ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes).cpu(), out.cpu())
         else:
             ce_loss = criterion(out.log(), targets.long())
 
