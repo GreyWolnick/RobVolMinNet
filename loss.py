@@ -23,7 +23,7 @@ def symmetric_cross_entropy(alpha, beta):
         y_true_2 = torch.clamp(y_true_2, min=0.6, max=1.0)
 
         print("y_true_2")
-        print(y_true)
+        print(y_true_2)
 
         print("y_pred_1")
         print(y_pred_1)
