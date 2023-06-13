@@ -324,7 +324,7 @@ for epoch in range(args.n_epoch):
             # out.log()
             ce_loss = criterion(out, targets, indexes)
         elif args.loss_func == "sl":
-            ce_loss = criterion(out, torch.nn.functional.one_hot(targets, args.num_classes))
+            ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), out)
         else:
             ce_loss = criterion(out.log(), targets.long())
 
@@ -371,7 +371,7 @@ for epoch in range(args.n_epoch):
             if args.loss_func == "gce":
                 loss = criterion(out, targets, indexes)  # Clean or out????
             elif args.loss_func == "sl":
-                ce_loss = criterion(out, torch.nn.functional.one_hot(targets, args.num_classes))
+                ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), out)
             else:
                 loss = criterion(out.log(), targets.long())
 
@@ -400,7 +400,7 @@ for epoch in range(args.n_epoch):
             if args.loss_func == "gce":
                 loss = criterion(clean, targets, indexes)
             elif args.loss_func == "sl":
-                ce_loss = criterion(clean, torch.nn.functional.one_hot(targets, args.num_classes))
+                ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), out)
             else:
                 loss = criterion(clean.log(), targets.long())
 
@@ -456,7 +456,7 @@ for batch_idx, (inputs, targets, indexes) in enumerate(test_loader):
     if args.loss_func == "gce":
         loss = criterion(clean, targets, indexes)
     elif args.loss_func == "sl":
-        ce_loss = criterion(out, torch.nn.functional.one_hot(targets, args.num_classes))
+        ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), out)
     else:
         loss = criterion(clean.log(), targets.long())
 
