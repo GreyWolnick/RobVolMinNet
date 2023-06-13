@@ -7,7 +7,8 @@ def symmetric_cross_entropy(alpha, beta):
 
         print("y_pred")
         print(y_pred)
-        exit()
+
+        print("________________________")
         y_true_1 = y_true
         y_pred_1 = y_pred
 
@@ -16,6 +17,14 @@ def symmetric_cross_entropy(alpha, beta):
 
         y_pred_1 = torch.clamp(y_pred_1, 1e-7, 1.0)
         y_true_2 = torch.clamp(y_true_2, 1e-4, 1.0)
+
+        print("y_true_2")
+        print(y_true)
+
+        print("y_pred_1")
+        print(y_pred_1)
+
+        exit()
 
         return alpha * torch.mean(-torch.sum(y_true_1 * torch.log(y_pred_1), dim=-1)) + beta * torch.mean(-torch.sum(y_pred_2 * torch.log(y_true_2), dim=-1))
     return loss
