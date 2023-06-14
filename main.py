@@ -328,11 +328,7 @@ for epoch in range(args.n_epoch):
         else:
             ce_loss = criterion(out.log(), targets.long())
 
-        print("CE LOSS:", ce_loss)
-
         loss = ce_loss + args.lam * regularizer_loss
-
-        print("Loss:", loss)
 
         train_loss += loss.item()
         train_vol_loss += regularizer_loss.item()
@@ -400,7 +396,7 @@ for epoch in range(args.n_epoch):
             if args.loss_func == "gce":
                 loss = criterion(clean, targets, indexes)
             elif args.loss_func == "sl":
-                ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), out)
+                ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), clean)
             else:
                 loss = criterion(clean.log(), targets.long())
 
