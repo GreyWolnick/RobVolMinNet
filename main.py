@@ -452,7 +452,7 @@ for batch_idx, (inputs, targets, indexes) in enumerate(test_loader):
     if args.loss_func == "gce":
         loss = criterion(clean, targets, indexes)
     elif args.loss_func == "sl":
-        ce_loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), clean)
+        loss = criterion(torch.nn.functional.one_hot(targets, args.num_classes), clean)
     else:
         loss = criterion(clean.log(), targets.long())
 
