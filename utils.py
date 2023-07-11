@@ -171,7 +171,13 @@ def noisify(train_data, train_labels, seed, noise_rate, feature_size, percent_in
 
 
 def create_dir(args):
-    save_dir = args.save_dir + '/' + args.dataset + '/' + args.loss_func + '/' + 'vol_min=' + args.vol_min + '/' + args.reg_type + '/' + 'alpha=%f' % args.alpha + '/' + 'beta=%f' % args.beta + '/' + 'noise_rate_%f' % (args.noise_rate) + '/' + 'instance_noise_rate_%f' % (args.percent_instance_noise) + '/' + 'lam=%f6_' % args.lam + '%d' % args.seed + '/' + args.sess
+    if args.loss_func == "sl":
+        save_dir = args.save_dir + '/' + args.dataset + '/' + args.loss_func + '/' + 'vol_min=' + args.vol_min + '/' + args.reg_type + '/' + 'alpha=%f' % args.alpha + '/' + 'beta=%f' % args.beta + '/' + 'noise_rate_%f' % (args.noise_rate) + '/' + 'instance_noise_rate_%f' % (args.percent_instance_noise) + '/' + 'lam=%f6_' % args.lam + '%d' % args.seed + '/' + args.sess
+    if args.loss_func == "gce":
+        save_dir = args.save_dir + '/' + args.dataset + '/' + args.loss_func + '/' + 'vol_min=' + args.vol_min + '/' + args.reg_type + '/' + 'q=%f' % args.q + '/' + 'k=%f' % args.k + '/' + 'noise_rate_%f' % (args.noise_rate) + '/' + 'instance_noise_rate_%f' % (args.percent_instance_noise) + '/' + 'lam=%f6_' % args.lam + '%d' % args.seed + '/' + args.sess
+    if args.loss_func == "ce":
+        save_dir = args.save_dir + '/' + args.dataset + '/' + args.loss_func + '/' + 'vol_min=' + args.vol_min + '/' + args.reg_type + '/' + 'noise_rate_%f' % (args.noise_rate) + '/' + 'instance_noise_rate_%f' % (args.percent_instance_noise) + '/' + 'lam=%f6_' % args.lam + '%d' % args.seed + '/' + args.sess
+
     if not os.path.exists(save_dir):
         os.system('mkdir -p %s' % (save_dir))
 
