@@ -8,10 +8,10 @@ dataset = "cifar10"
 loss_func = "sl"
 vol_min = "True"
 reg_type = "min"
-alpha = "0.9"
-beta = "0.4"
-noise_rate = "0.5"
-instance_noise_rate = "0.1"
+alpha = "0.900000"
+beta = "0.400000"
+noise_rate = "0.500000"
+instance_noise_rate = "0.100000"
 
 best_accs = []
 for i in range(5):
