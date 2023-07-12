@@ -22,7 +22,7 @@ for i in range(5):
         for line in file:
             if line.startswith("Best Model Test Loss"):
                 desired_line = line.strip()
-                best_accs.append(int(desired_line[-8:]))
+                best_accs.append(float(desired_line[-8:]))
                 break
 
 print(f"{np.mean(best_accs)}±{np.std(best_accs)}")
