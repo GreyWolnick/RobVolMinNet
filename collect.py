@@ -76,4 +76,4 @@ percent_instance = ["0.100000", "0.200000"]
 
 for config in configurations:
     for p in percent_instance:
-        calculate_accuracy(config['dataset'], config['loss_func'], config['vol_min'], config['reg_type'], config['reg_type'], p)
+        calculate_accuracy(config['dataset'], config['loss_func'], config['vol_min'], config['reg_type'], config['lam'], p)
