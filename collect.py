@@ -3,8 +3,10 @@ import numpy as np
 def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_noise_rate):
     alpha = "0.900000"
     beta = "0.400000"
-    q = "0.700000"
-    k = "0.500000"
+    # q = "0.700000"
+    # k = "0.500000"
+    q = "0.500000"
+    k = "0.400000"
     noise_rate = "0.500000"
 
     best_accs = []
