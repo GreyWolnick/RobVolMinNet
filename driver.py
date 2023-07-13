@@ -1,6 +1,22 @@
 import subprocess
 
-percent_instance = [0.1, 0.2]
+# percent_instance = [0.1, 0.2]
+percent_instance = [0.2]
+
+for i in range(2):  # VolMinNet
+    cmd = f'python3 main.py --dataset fashionmnist --noise_rate 0.5 --lam 0.00001 --reg_type min --loss_func ce --percent_instance_noise 0.1 --sess {i+3}'
+    subprocess.run(cmd.split())
+    print(f"Finished iteration {i + 1} of volminnet")
+
+for i in range(5):  # CE
+    cmd = f'python3 main.py --dataset fashionmnist --noise_rate 0.5 --vol_min False --lam 0.0001 --reg_type min --loss_func ce --percent_instance_noise 0.1 --sess {i}'
+    subprocess.run(cmd.split())
+    print(f"Finished iteration {i + 1} of ce")
+
+for i in range(5):  # GCE
+    cmd = f'python3 main.py --dataset fashionmnist --noise_rate 0.5 --vol_min False --lam 0.0001 --reg_type min --loss_func gce --q 0.7 --k 0.5 --percent_instance_noise 0.1 --sess {i}'
+    subprocess.run(cmd.split())
+    print(f"Finished iteration {i + 1} of gce")
 
 for p in percent_instance:
     for i in range(5):  # Proposed
