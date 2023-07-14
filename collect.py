@@ -31,42 +31,42 @@ def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_nois
 
 configurations = [
     {
-        'dataset': "cifar10",
+        'dataset': "fashionmnist",
         'loss_func': "sl",
         'vol_min': "True",
         'reg_type': "min",
         'lam': "0.0001"
     },
     {
-        'dataset': "cifar10",
+        'dataset': "fashionmnist",
         'loss_func': "sl",
         'vol_min': "True",
         'reg_type': "max",
         'lam': "0.0001"
     },
     {
-        'dataset': "cifar10",
+        'dataset': "fashionmnist",
         'loss_func': "sl",
         'vol_min': "False",
         'reg_type': "min",
         'lam': "0.0000"
     },
 {
-        'dataset': "cifar10",
+        'dataset': "fashionmnist",
         'loss_func': "ce",
         'vol_min': "True",
         'reg_type': "min",
         'lam': "0.0001"
     },
     {
-        'dataset': "cifar10",
+        'dataset': "fashionmnist",
         'loss_func': "ce",
         'vol_min': "False",
         'reg_type': "min",
         'lam': "0.0000"
     },
     {
-        'dataset': "cifar10",
+        'dataset': "fashionmnist",
         'loss_func': "gce",
         'vol_min': "False",
         'reg_type': "min",
