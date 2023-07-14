@@ -16,7 +16,7 @@ def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_nois
         elif loss_func == "gce":
             file_path = f"saves/{dataset}/{loss_func}/vol_min={vol_min}/{reg_type}/q={q}/k={k}/noise_rate_{noise_rate}/instance_noise_rate_{instance_noise_rate}/lam={lam}006_1/{i}/log.txt"
         else:
-            file_path = f"saves/{dataset}/{loss_func}/vol_min={vol_min}/{reg_type}/noise_rate_{noise_rate}/instance_noise_rate_{instance_noise_rate}/lam={lam}006_1/{i}/log.txt"
+            file_path = f"saves/{dataset}/{loss_func}/vol_min={vol_min}/{reg_type}/noise_rate_{noise_rate}/instance_noise_rate_{instance_noise_rate}/lam={lam}06_1/{i}/log.txt"
 
         with open(file_path, 'r') as file:
             for line in file:
@@ -63,7 +63,7 @@ configurations = [
         'loss_func': "ce",
         'vol_min': "False",
         'reg_type': "min",
-        'lam': "0.0000"
+        'lam': "0.00000"
     },
     {
         'dataset': "fashionmnist",
