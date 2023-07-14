@@ -5,8 +5,8 @@ def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_nois
     beta = "0.400000"
     # q = "0.700000"
     # k = "0.500000"
-    q = "0.500000"
-    k = "0.400000"
+    q = "0.700000"
+    k = "0.500000"
     noise_rate = "0.500000"
 
     best_accs = []
@@ -56,7 +56,7 @@ configurations = [
         'loss_func': "ce",
         'vol_min': "True",
         'reg_type': "min",
-        'lam': "0.0001"
+        'lam': "0.00001"
     },
     {
         'dataset': "fashionmnist",
