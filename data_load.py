@@ -263,3 +263,4 @@ class cifar100_test_dataset(Data.Dataset):
 
     def __len__(self):
         return len(self.test_data)
+

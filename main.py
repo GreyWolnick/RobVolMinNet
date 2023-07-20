@@ -131,6 +131,25 @@ if args.dataset == 'cifar100':
     trans = sig_t(device, args.num_classes, init=args.init)
     optimizer_trans = optim.Adam(trans.parameters(), lr=args.lr, weight_decay=0)
 
+if args.dataset == 'clothing1m':
+    args.n_epoch = 80
+
+    args.num_classes = 10
+    milestones = [30, 60]
+
+    train_data = data_load.cifar10_dataset(True, transform=transform_train(args.dataset),
+                                         target_transform=transform_target,
+                                         noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
+                                         random_seed=args.seed, anchor=args.anchor)
+
+    val_data = data_load.cifar10_dataset(False, transform=transform_test(args.dataset), target_transform=transform_target,
+                                         noise_rate=args.noise_rate, percent_instance_noise=args.percent_instance_noise,
+                                         random_seed=args.seed)
+    test_data = data_load.cifar10_test_dataset(transform=transform_test(args.dataset), target_transform=transform_target)
+    model = ResNet18(args.num_classes)
+    trans = sig_t(device, args.num_classes)
+    optimizer_trans = optim.SGD(trans.parameters(), lr=args.lr, weight_decay=0, momentum=0.9)
+
 save_dir, model_dir, matrix_dir, logs = create_dir(args)
 
 print(args, file=logs, flush=True)
