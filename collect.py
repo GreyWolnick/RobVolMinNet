@@ -7,7 +7,7 @@ def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_nois
     # k = "0.500000"
     q = "0.700000"
     k = "0.500000"
-    noise_rate = "0.500000"
+    noise_rate = "0.300000"
 
     best_accs = []
     for i in range(5):
