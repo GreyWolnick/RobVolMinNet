@@ -37,34 +37,34 @@ configurations = [
         'reg_type': "min",
         'lam': "0.0001"
     },
-    {
-        'dataset': "cifar10",
-        'loss_func': "sl",
-        'vol_min': "True",
-        'reg_type': "max",
-        'lam': "0.0001"
-    },
-    {
-        'dataset': "cifar10",
-        'loss_func': "sl",
-        'vol_min': "False",
-        'reg_type': "min",
-        'lam': "0.0000"
-    },
-{
-        'dataset': "cifar10",
-        'loss_func': "ce",
-        'vol_min': "True",
-        'reg_type': "min",
-        'lam': "0.00001"
-    },
-    {
-        'dataset': "cifar10",
-        'loss_func': "ce",
-        'vol_min': "False",
-        'reg_type': "min",
-        'lam': "0.00000"
-    },
+#     {
+#         'dataset': "cifar10",
+#         'loss_func': "sl",
+#         'vol_min': "True",
+#         'reg_type': "max",
+#         'lam': "0.0001"
+#     },
+#     {
+#         'dataset': "cifar10",
+#         'loss_func': "sl",
+#         'vol_min': "False",
+#         'reg_type': "min",
+#         'lam': "0.0000"
+#     },
+# {
+#         'dataset': "cifar10",
+#         'loss_func': "ce",
+#         'vol_min': "True",
+#         'reg_type': "min",
+#         'lam': "0.00001"
+#     },
+#     {
+#         'dataset': "cifar10",
+#         'loss_func': "ce",
+#         'vol_min': "False",
+#         'reg_type': "min",
+#         'lam': "0.00000"
+#     },
     {
         'dataset': "cifar10",
         'loss_func': "gce",
