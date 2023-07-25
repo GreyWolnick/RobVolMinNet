@@ -1,7 +1,7 @@
 import subprocess
 
 percent_instance = [0.1, 0.2]
-sets = [(0.9, 0.4, 0.00001), (0.9, 0.4, 0.0005)]
+sets = [(0.7, 0.4, 0.00001), (0.9, 0.4, 0.000005)]
 
 # best so far (0.7, 0.4)
 
@@ -9,8 +9,6 @@ for set in sets:  # Proposed
     cmd = f'python3 main.py --dataset cifar10 --noise_rate 0.3 --lam {set[2]} --reg_type min --loss_func sl --alpha {set[0]} --beta {set[1]} --percent_instance_noise 0.1 --sess 0'
     subprocess.run(cmd.split())
 
-cmd = f'python3 main.py --dataset cifar10 --noise_rate 0.3 --vol_min False --lam 0.0001 --reg_type min --loss_func gce --q 0.4 --k 0.5 --percent_instance_noise 0.1 --sess 0'
-subprocess.run(cmd.split())
 
 
 # for p in percent_instance:
