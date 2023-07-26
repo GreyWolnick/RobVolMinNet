@@ -1,7 +1,7 @@
 import numpy as np
 
 def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_noise_rate):
-    alpha = "0.700000"
+    alpha = "0.900000"
     beta = "0.400000"
     # q = "0.700000"
     # k = "0.500000"
@@ -35,7 +35,7 @@ configurations = [
         'loss_func': "sl",
         'vol_min': "True",
         'reg_type': "min",
-        'lam': "0.0001"
+        'lam': "0.00001"
     },
 #     {
 #         'dataset': "cifar10",
