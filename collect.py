@@ -12,7 +12,7 @@ def calculate_accuracy(dataset, loss_func, vol_min, reg_type, lam, instance_nois
     best_accs = []
     for i in range(5):
         if loss_func == "sl":
-            file_path = f"saves/{dataset}/{loss_func}/vol_min={vol_min}/{reg_type}/alpha={alpha}/beta={beta}/noise_rate_{noise_rate}/instance_noise_rate_{instance_noise_rate}/lam={lam}006_1/{i}/log.txt"
+            file_path = f"saves/{dataset}/{loss_func}/vol_min={vol_min}/{reg_type}/alpha={alpha}/beta={beta}/noise_rate_{noise_rate}/instance_noise_rate_{instance_noise_rate}/lam={lam}06_1/{i}/log.txt"
         elif loss_func == "gce":
             file_path = f"saves/{dataset}/{loss_func}/vol_min={vol_min}/{reg_type}/q={q}/k={k}/noise_rate_{noise_rate}/instance_noise_rate_{instance_noise_rate}/lam={lam}006_1/{i}/log.txt"
         else:
