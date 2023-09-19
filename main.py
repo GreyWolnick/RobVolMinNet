@@ -240,8 +240,6 @@ def maximum_volume_regularization(H):
 def minimum_volume_regularization(T):
     return T.slogdet().logabsdet
 
-print("here")
-
 
 for epoch in range(args.n_epoch):
     print('epoch {}'.format(epoch), file=logs, flush=True)
