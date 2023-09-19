@@ -21,7 +21,7 @@ parser.add_argument('--save_dir', type=str, help='dir to save model files', defa
 parser.add_argument('--dataset', type=str, help='mnist, cifar10, or cifar100', default='mnist')
 parser.add_argument('--n_epoch', type=int, default=200)
 parser.add_argument('--num_classes', type=int, default=10)
-parser.add_argument('--loss_func', type=str, default='gce')
+parser.add_argument('--loss_func', type=str, default='sl')
 parser.add_argument('--reg_type', type=str, default='min')
 parser.add_argument('--vol_min', type=str, default='True')
 # parser.add_argument('--vol_min', action='store_true') Possibly?
@@ -153,8 +153,6 @@ if args.dataset == 'clothing1m':
 save_dir, model_dir, matrix_dir, logs = create_dir(args)
 
 print(args, file=logs, flush=True)
-
-print("here1")
 
 # optimizer and StepLR
 optimizer_es = optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.weight_decay, momentum=0.9)
