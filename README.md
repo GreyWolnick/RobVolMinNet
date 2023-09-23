@@ -2,7 +2,7 @@
 
 ## Deep Learning from Noisy Labels via Robust Nonnegative Matrix Factorization-Based Design
 
-Full paper is available [here](IEEE_CAMSAP2023_noisy_label.pdf).
+Recently published by IEEE CAMSAP 2023. Full paper is available [here](IEEE_CAMSAP2023_noisy_label.pdf).
 
 Daniel Wolnick, Shahana Ibrahim, Tim Marrinan, Xiao Fu
 
